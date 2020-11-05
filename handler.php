@@ -44,6 +44,7 @@ function set_date($req)
     }
 
     # Radio button options
+    # Only without manual date entry
     if (!$req->start_date || !$req->end_date) {
         switch ($req->date_radio) {
           case 'today':
@@ -71,6 +72,10 @@ function set_date($req)
             $req->end_date = $next_year;
             break;
         }
+    } else {
+        # Partial manual date fallback
+        $req->start_date = ($req->start_date) ?: $today;
+        $req->end_date = ($req->end_date) ?: $next_year;
     }
 
     unset($req->date_radio);
@@ -89,6 +94,7 @@ function set_categories($req)
             unset($req->$k);
         }
     }
+
     return $req;
 }
 
@@ -99,19 +105,26 @@ function filter_feed($req, $rss)
     # Populate $req->matches with SimpleXMLElements
     $req->matches = [];
 
-    # Dates
-    # todo
-
     # Categories
-    foreach ($req->category as $filter) {
-        foreach ($rss->item as $event) {
-            if (in_array($filter, get_object_vars($event->category))) {
-                array_push($req->matches, $event);
+    # Add all possible matches
+    if (empty($req->category)) {
+        $req->matches = $rss;
+    } else {
+        foreach ($req->category as $filter) {
+            foreach ($rss->item as $event) {
+                if (in_array($filter, get_object_vars($event->category))) {
+                    array_push($req->matches, $event);
+                }
             }
         }
     }
 
+    # Dates
+    # Subtract invalid matches
+    # todo
+
     # Flags
+    # Subtract invalid matches
     # todo
     
     return $req;

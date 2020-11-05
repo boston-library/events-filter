@@ -63,23 +63,16 @@ $data = new BplData();
     <?= $data->make_checkboxes('Languages', $data->languages) ?>
 
     <!-- Options -->
-    <h2>Options</h2>
+    <h2>Filter By</h2>
 
     <input type="checkbox" id="is_virtual" name="is_virtual" value="true" />
     <label for="is_virtual">Online Events</label><br />
 
-    <input type="checkbox" id="is_cancelled" name="is_cancelled" value="true" />
-    <label for="is_cancelled">Include Cancelled</label><br />
-
     <input type="checkbox" id="is_featured" name="is_featured" value="true" />
     <label for="is_featured">Featured Events</label><br />
 
-    <!--
-    <input type="checkbox"
-      id="is_featured_at_location" name="is_featured_at_location"
-      value="true" />
-    <label for="is_featured_at_location">Show Featured at Location</label><br />
-    -->
+    <input type="checkbox" id="is_cancelled" name="is_cancelled" value="true" />
+    <label for="is_cancelled">Cancelled Events</label><br />
 
     <input type='submit' value='Submit'>
   </form>
