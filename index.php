@@ -1,7 +1,7 @@
 <?php
 
-require_once 'lib/bpl_data.php';
-$data = new BplData();
+require_once 'lib/metadata.php';
+$meta = new Metadata();
 
 ?>
 
@@ -16,7 +16,7 @@ $data = new BplData();
 <body>
 
 
-  <form action='handler.php' method='post'>
+  <form action='handler.php' method='get'>
 
     <!-- Date -->
     <h2>Date</h2>
@@ -44,23 +44,23 @@ $data = new BplData();
 
     <!-- Locations -->
     <h2>Locations</h2>
-    <?= $data->make_checkboxes('Locations', $data->locations) ?>
+    <?= $meta->make_checkboxes('Locations', $meta->locations) ?>
 
     <!-- Event Types -->
     <h2>Event Types</h2>
-    <?= $data->make_checkboxes('Event Types', $data->event_types) ?>
+    <?= $meta->make_checkboxes('Event Types', $meta->event_types) ?>
 
     <!-- Programs -->
     <h2>Programs</h2>
-    <?= $data->make_checkboxes('Programs', $data->programs) ?>
+    <?= $meta->make_checkboxes('Programs', $meta->programs) ?>
 
     <!-- Audiences -->
     <h2>Audiences</h2>
-    <?= $data->make_checkboxes('Audiences', $data->audiences) ?>
+    <?= $meta->make_checkboxes('Audiences', $meta->audiences) ?>
 
     <!-- Languages -->
     <h2>Languages</h2>
-    <?= $data->make_checkboxes('Languages', $data->languages) ?>
+    <?= $meta->make_checkboxes('Languages', $meta->languages) ?>
 
     <!-- Options -->
     <h2>Filter By</h2>

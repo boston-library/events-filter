@@ -21,8 +21,8 @@ $ics = new ZCiCal();
  * Parse RSS
  */
 
-# $_POST to new stdClass
-$req = (object) $_POST;
+# $_GET to new stdClass
+$req = (object) $_GET;
 $req = set_date($req);
 $req = set_categories($req);
 
@@ -119,14 +119,37 @@ function filter_feed($req, $rss)
         }
     }
 
-    # Dates
+    # Date
     # Subtract invalid matches
     # todo
 
-    # Flags
+
+    # Filter By
     # Subtract invalid matches
-    # todo
-    
+    # https://stackoverflow.com/a/622363
+    foreach ($req->matches as $match) {
+        # is_virtual mismatch
+        if ($req->is_virtual
+        && !$match->xpath('//bc:is_virtual')) {
+            unset($req->match);
+        }
+
+        # is_featured mismatch
+        if ($req->is_featured
+        && !$match->xpath('//bc:is_featured')
+        || !$match->xpath('//bc:is_featured_at_location')) {
+            unset($req->match);
+        }
+
+        # is_cancelled mismatch
+        # Note default logic to hide cancelled
+        if (!$req->is_cancelled
+                && $match->xpath('//bc:is_cancelled')) {
+            unset($req->match);
+        }
+    }
+
+    var_dump($req->matches);
     return $req;
 }
 

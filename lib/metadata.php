@@ -1,6 +1,6 @@
 <?php
 
-class BplData
+class Metadata
 {
     /**
      * Functions
@@ -24,7 +24,7 @@ EOT;
     }
 
     # Print plain array list
-    public function debug_list($array)
+    public function pr_array($array)
     {
         echo '<pre>';
         foreach ($array as $a) {
@@ -36,6 +36,12 @@ EOT;
 
     /**
      * Variables
+     *
+     * Note there's no public API available to pull metadata from
+     * https://partnerportal.bibliocommons.com/hc/en-us/articles/205053354-Events-RSS-Feed
+     *
+     * So we must manually keep it up to date,
+     * e.g., when '(formerly Dudley)' goes away
      */
 
     # Locations
