@@ -42,6 +42,18 @@ $meta = new Metadata();
       max='<?= strftime('%Y-%m-%d', strtotime('+1 year')) ?>'
       value='' /><br />
 
+    <!-- Options -->
+    <h2>Filter By</h2>
+
+    <input type="checkbox" id="is_virtual" name="is_virtual" value="true" />
+    <label for="is_virtual">Online Events</label><br />
+
+    <input type="checkbox" id="is_featured" name="is_featured" value="true" />
+    <label for="is_featured">Featured Events</label><br />
+
+    <input type="checkbox" id="is_cancelled" name="is_cancelled" value="true" />
+    <label for="is_cancelled">Cancelled Events</label><br />
+
     <!-- Locations -->
     <h2>Locations</h2>
     <?= $meta->make_checkboxes('Locations', $meta->locations) ?>
@@ -62,18 +74,8 @@ $meta = new Metadata();
     <h2>Languages</h2>
     <?= $meta->make_checkboxes('Languages', $meta->languages) ?>
 
-    <!-- Options -->
-    <h2>Filter By</h2>
 
-    <input type="checkbox" id="is_virtual" name="is_virtual" value="true" />
-    <label for="is_virtual">Online Events</label><br />
-
-    <input type="checkbox" id="is_featured" name="is_featured" value="true" />
-    <label for="is_featured">Featured Events</label><br />
-
-    <input type="checkbox" id="is_cancelled" name="is_cancelled" value="true" />
-    <label for="is_cancelled">Cancelled Events</label><br />
-
+    <br /><br />
     <input type='submit' value='Submit'>
   </form>
 
