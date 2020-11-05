@@ -3,12 +3,6 @@
 require_once 'lib/bpl_data.php';
 $data = new BplData();
 
-# Common dates
-$today = strftime('%Y-%m-%d');
-$tomorrow = strftime('%Y-%m-%d', strtotime('+1 day'));
-$this_weekend = '';
-$next_week = strftime('%Y-%m-%d', strtotime('+7 days'));
-
 ?>
 
 <!doctype html>
@@ -27,16 +21,16 @@ $next_week = strftime('%Y-%m-%d', strtotime('+7 days'));
     <!-- Date -->
     <h2>Date</h2>
 
-    <input type='radio' name='today' id='today' value='true' />
+    <input type='radio' name='date_radio' id='date_radio' value='today' />
     <label for='today'>Today</label><br />
 
-    <input type='radio' name='tomorrow' id='tomorrow' value='true' />
+    <input type='radio' name='date_radio' id='date_radio' value='tomorrow' />
     <label for='tomorrow'>Tomorrow</label><br />
 
-    <input type='radio' name='this_weekend' id='this_weekend' value='true' />
+    <input type='radio' name='date_radio' id='date_radio' value='this_weekend' />
     <label for='this_weekend'>This Weekend</label><br />
 
-    <input type='radio' name='date' id='next_week' value='next_week' />
+    <input type='radio' name='date_radio' id='date_radio' value='next_week' />
     <label for='next_week'>Next 7 Days</label><br />
 
     From
