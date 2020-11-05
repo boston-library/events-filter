@@ -7,7 +7,7 @@
 # https://github.com/dg/rss-php
 require_once 'lib/feed.php';
 Feed::$cacheDir = 'tmp';
-Feed::$cacheExpire = '1 hour';
+Feed::$cacheExpire = '+1 hour';
 
 $url = 'https://bpl.bibliocommons.com/events/rss/all';
 $rss = Feed::loadRss($url);
@@ -18,29 +18,32 @@ $ics = new ZCiCal();
 
 
 /**
- * Handler
+ * Parse RSS
  */
- 
+
 # $_POST to new stdClass
 $req = (object) $_POST;
 $req = set_date($req);
 $req = set_categories($req);
 
-# Start and end dates
+# Set start and end dates
 function set_date($req)
 {
-    # Common dates
-    $today = date('Y-m-d');
-    $tomorrow = date('Y-m-d', strtotime('+1 day'));
-    $this_saturday = date('Y-m-d', strtotime('saturday'));
-    $this_sunday = date('Y-m-d', strtotime('sunday'));
-    $next_week = date('Y-m-d', strtotime('+7 days'));
-    $next_year = date('Y-m-d', strtotime('+1 year'));
+    # Useful date objects
+    $f = 'Y-m-d';
+    $today = date($f);
+    $tomorrow = date($f, strtotime('+1 day'));
+    $this_saturday = date($f, strtotime('saturday'));
+    $this_sunday = date($f, strtotime('sunday'));
+    $next_week = date($f, strtotime('+7 days'));
+    $next_year = date($f, strtotime('+1 year'));
 
+    # Prevent warnings
     if (!isset($req->date_radio)) {
         $req->date_radio = null;
     }
 
+    # Radio button options
     if (!$req->start_date || !$req->end_date) {
         switch ($req->date_radio) {
           case 'today':
@@ -74,7 +77,7 @@ function set_date($req)
     return $req;
 }
 
-# Categories (all checkboxes)
+# Categories (all form checkboxes)
 function set_categories($req)
 {
     $req->category = [];
@@ -83,48 +86,51 @@ function set_categories($req)
     foreach ($req as $k => $v) {
         if (preg_match($regex, $k)) {
             array_push($req->category, $v);
-            # todo: unset, e.g., category_6fda
-            #unset($k);
+            unset($req->$k);
         }
     }
     return $req;
 }
 
-# Compare $req to $rss
+# Compare $req and $rss
+# e.g., foreach $match: $ics->export();
 function filter_feed($req, $rss)
 {
+    # Populate $req->matches with SimpleXMLElements
     $req->matches = [];
 
+    # Dates
+    # todo
+
+    # Categories
     foreach ($req->category as $filter) {
-        #var_dump($filter);
-
         foreach ($rss->item as $event) {
-            #var_dump($event->category);
-            #var_dump(in_array($filter,get_object_vars($event->category)));
-
             if (in_array($filter, get_object_vars($event->category))) {
-                #return $event;
                 array_push($req->matches, $event);
             }
         }
     }
+
+    # Flags
+    # todo
+    
     return $req;
 }
+
+
+/**
+ * Output HTML, iCal, and CSV
+ */
+
+# todo
+
+
+/**
+ * Debug
+ */
 
 echo '<pre>';
 #var_dump($_POST);
 #var_dump($req);
 var_dump(filter_feed($req, $rss));
-echo '</pre>';
-
-/*
-echo '<pre>';
-foreach ($rss->item as $rss) {
-    print_r($rss->link);
-}
-echo '</pre>';
- */
-
-echo '<pre>';
-#var_dump($rss->item);
 echo '</pre>';
