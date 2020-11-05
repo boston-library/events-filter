@@ -16,7 +16,7 @@ $meta = new Metadata();
 <body>
 
 
-  <form action='handler.php' method='get'>
+  <form action='filter.php' method='get'>
 
     <!-- Date -->
     <h2>Date</h2>

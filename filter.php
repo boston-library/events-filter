@@ -29,6 +29,9 @@ $req = set_categories($req);
 # Set start and end dates
 function set_date($req)
 {
+    # Prevent warnings
+    $req->date_radio = (isset($req->date_radio)) ?: false;
+
     # Useful date objects
     $f = 'Y-m-d';
     $today = date($f);
@@ -37,11 +40,6 @@ function set_date($req)
     $this_sunday = date($f, strtotime('sunday'));
     $next_week = date($f, strtotime('+7 days'));
     $next_year = date($f, strtotime('+1 year'));
-
-    # Prevent warnings
-    if (!isset($req->date_radio)) {
-        $req->date_radio = null;
-    }
 
     # Radio button options
     # Only without manual date entry
@@ -128,6 +126,11 @@ function filter_feed($req, $rss)
     # Subtract invalid matches
     # https://stackoverflow.com/a/622363
     foreach ($req->matches as $match) {
+        # Prevent warnings
+        $req->is_virtual = (isset($req->is_virtual)) ?: false;
+        $req->is_featured = (isset($req->is_featured)) ?: false;
+        $req->is_cancelled = (isset($req->is_cancelled)) ?: false;
+
         # is_virtual mismatch
         if ($req->is_virtual
         && !$match->xpath('//bc:is_virtual')) {
@@ -142,7 +145,7 @@ function filter_feed($req, $rss)
         }
 
         # is_cancelled mismatch
-        # Note default logic to hide cancelled
+        # Note default logic: hide cancelled
         if (!$req->is_cancelled
                 && $match->xpath('//bc:is_cancelled')) {
             unset($req->match);
