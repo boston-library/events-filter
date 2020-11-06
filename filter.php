@@ -21,6 +21,7 @@ $ics = new ZCiCal();
 /**
  * Parse RSS
  * Takes a raw $_GET superglobal and returns a legible object
+ * todo: Move to its own class
  */
 
 # $_GET to new stdClass
@@ -104,17 +105,17 @@ function set_categories($req)
 /**
  * Find matches
  * todo: Split into 3 clear mini-functions
+ * todo: Move to the Parse class
  */
 
 # Instantiate the $req->matches object
 $req->matches = new stdClass();
-$req->matches = add_categories($req, $rss);
-#$req->matches = add_categories($req, $rss);
+$req->matches = get_categories($req, $rss);
 
 # Compare $req and $rss
 # Probs not called directly in production
 # todo: Clarify scoping/privacy with a class
-function add_categories($req, $rss)
+function get_categories($req, $rss)
 {
     # Collect output in new array
     $out = [];
@@ -132,17 +133,18 @@ function add_categories($req, $rss)
         }
     }
 
-    #var_dump($req->matches);
-    return (object) $out;
+    #return (object) $out;
+    return $out;
 }
 
 # Filter by radio buttons
-# todo: Make it independent of add_categories() output
+# todo: Clarify get_categories() relationship
 function filter_options($req, $rss)
 {
-    # Collect output in new array
+    # IO arrays
+    $in = get_categories($req, $rss);
+    #var_dump($in);
     $out = [];
-    #add_categories($req, $rss);
 
     # Prevent warnings
     $req->is_virtual = (isset($req->is_virtual)) ?: false;
@@ -151,42 +153,50 @@ function filter_options($req, $rss)
 
     # Subtract invalid matches
     # https://stackoverflow.com/a/622363
-    if (!empty($req->matches->item)) {
-        foreach ($req->matches->item as $match) {
+    if (!empty($in)) {
+        foreach ($in->item as $match) {
             # Define namespace
             $ns = $match->children('bc', true);
             #var_dump($ns);
 
-            # Cast string to bool
+            # Cast string to bool for comparisons
+            # todo: Don't rely on loose equality
             # https://www.php.net/manual/en/types.comparisons.php
-            $is_virtual = ((string) $ns->is_virtual === 'true') ? true : false;
-            $is_featured = ((string) $ns->is_featured === 'true' || (string) $ns->is_featured_at_location === 'true') ? true : false;
-            $is_cancelled = ((string) $ns->is_cancelled === 'true') ? true : false;
+            $is_virtual = ($ns->{'is_virtual'} == 'true') ? true : false;
+            $is_featured = ($ns->{'is_featured'} == 'true'
+                || $ns->{'is_featured_at_location'} == 'true') ? true : false;
+            $is_cancelled = ($ns->{'is_cancelled'} == 'true') ? true : false;
 
-            # is_virtual mismatch
-            if ($req->is_virtual === true && $is_virtual === true) {
+            var_dump($req->is_virtual);
+            var_dump($ns->{'is_virtual'});
+            var_dump($is_virtual);
+            echo "\n\n";
+
+
+            # is_virtual match
+            if ($req->is_virtual === $is_virtual) {
                 array_push($out, $match);
             }
 
-            # is_featured mismatch
-            if ($req->is_featured === true && $is_featured === true) {
+            # is_featured match
+            if ($req->is_featured === $is_featured) {
                 array_push($out, $match);
             }
 
             # is_cancelled mismatch
             # Note default logic: hide cancelled
-            if ($req->is_cancelled === false && $is_cancelled === false) {
+            if ($req->is_cancelled !== $is_cancelled) {
                 array_push($out, $match);
             }
         }
     }
 
-    #var_dump((object)$output);
     return (object) $out;
 }
 
 function filter_date($req, $rss)
 {
+    # todo
     return false;
 }
 
@@ -205,7 +215,7 @@ function filter_date($req, $rss)
 echo '<pre>';
 #var_dump($req);
 #var_dump($rss);
-var_dump($req->matches);
-
+#var_dump($req->matches);
 var_dump(filter_options($req, $rss));
+#filter_options($req, $rss);
 echo '</pre>';
