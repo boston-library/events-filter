@@ -20,6 +20,7 @@ $ics = new ZCiCal();
 
 /**
  * Parse RSS
+ * Takes a raw $_GET superglobal and returns a legible object
  */
 
 # $_GET to new stdClass
@@ -27,13 +28,13 @@ $req = (object) $_GET;
 $req = set_date($req);
 $req = set_categories($req);
 
-# Set start and end dates
+# Set the start and end dates
 function set_date($req)
 {
     # Prevent warnings
     $req->date_radio = (isset($req->date_radio)) ?: false;
 
-    # Useful date objects
+    # Common useful dates
     $f = 'Y-m-d';
     $today = date($f);
     $tomorrow = date($f, strtotime('+1 day'));
@@ -43,7 +44,7 @@ function set_date($req)
     $next_year = date($f, strtotime('+1 year'));
 
     # Radio button options
-    # Only without manual date entry
+    # Only applied absent date entry
     if ($req->start_date || $req->end_date) {
         # Partial manual date fallback
         $req->start_date = ($req->start_date) ?: $today;
@@ -81,7 +82,8 @@ function set_date($req)
     return $req;
 }
 
-# Categories (all form checkboxes)
+# Set the categories (all form checkboxes)
+# Strips the bin2hex() suffixes and adds $req->category
 function set_categories($req)
 {
     $req->category = [];
@@ -104,33 +106,44 @@ function set_categories($req)
  * todo: Split into 3 clear mini-functions
  */
 
+# Instantiate the $req->matches object
+$req->matches = new stdClass();
+$req->matches = add_categories($req, $rss);
+#$req->matches = add_categories($req, $rss);
+
 # Compare $req and $rss
-# e.g., foreach $match: $ics->export();
-function filter_categories($req, $rss)
+# Probs not called directly in production
+# todo: Clarify scoping/privacy with a class
+function add_categories($req, $rss)
 {
-    $req->matches = [];
+    # Collect output in new array
+    $out = [];
 
     # Add all possible matches
     if (empty($req->category)) {
-        $req->matches = $rss;
+        $out = $rss;
     } else {
         foreach ($req->category as $filter) {
             foreach ($rss->item as $event) {
                 if (in_array($filter, get_object_vars($event->category))) {
-                    array_push($req->matches, $event);
+                    array_push($out, $event);
                 }
             }
         }
     }
 
     #var_dump($req->matches);
-    return $req->matches;
+    return (object) $out;
 }
 
 # Filter by radio buttons
-# todo: Make it independent of filter_categories() output
+# todo: Make it independent of add_categories() output
 function filter_options($req, $rss)
 {
+    # Collect output in new array
+    $out = [];
+    #add_categories($req, $rss);
+
     # Prevent warnings
     $req->is_virtual = (isset($req->is_virtual)) ?: false;
     $req->is_featured = (isset($req->is_featured)) ?: false;
@@ -138,32 +151,38 @@ function filter_options($req, $rss)
 
     # Subtract invalid matches
     # https://stackoverflow.com/a/622363
-    if (!empty($req->matches)) {
+    if (!empty($req->matches->item)) {
         foreach ($req->matches->item as $match) {
+            # Define namespace
             $ns = $match->children('bc', true);
             #var_dump($ns);
 
+            # Cast string to bool
+            # https://www.php.net/manual/en/types.comparisons.php
+            $is_virtual = ((string) $ns->is_virtual === 'true') ? true : false;
+            $is_featured = ((string) $ns->is_featured === 'true' || (string) $ns->is_featured_at_location === 'true') ? true : false;
+            $is_cancelled = ((string) $ns->is_cancelled === 'true') ? true : false;
+
             # is_virtual mismatch
-            if ($req->is_virtual && !$ns->is_virtual) {
-                unset($req->$match);
-                var_dump($match);
+            if ($req->is_virtual === true && $is_virtual === true) {
+                array_push($out, $match);
             }
 
             # is_featured mismatch
-            if ($req->is_featured && !$ns->is_featured || !$ns->is_featured_at_location) {
-                unset($req->$match);
+            if ($req->is_featured === true && $is_featured === true) {
+                array_push($out, $match);
             }
 
             # is_cancelled mismatch
             # Note default logic: hide cancelled
-            if (!$req->is_cancelled && $ns->is_cancelled) {
-                unset($req->$match);
+            if ($req->is_cancelled === false && $is_cancelled === false) {
+                array_push($out, $match);
             }
         }
     }
 
-    var_dump($req->matches);
-    return $req->matches;
+    #var_dump((object)$output);
+    return (object) $out;
 }
 
 function filter_date($req, $rss)
@@ -186,6 +205,7 @@ function filter_date($req, $rss)
 echo '<pre>';
 #var_dump($req);
 #var_dump($rss);
-filter_categories($req, $rss);
-filter_options($req, $rss);
+var_dump($req->matches);
+
+var_dump(filter_options($req, $rss));
 echo '</pre>';
