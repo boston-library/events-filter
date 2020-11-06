@@ -11,6 +11,7 @@ Feed::$cacheExpire = '+1 hour';
 
 $url = 'https://bpl.bibliocommons.com/events/rss/all';
 $rss = Feed::loadRss($url);
+#$rss->registerXPathNamespace('bc', 'http://bibliocommons.com/rss/1.0/modules/event/');
 
 # https://github.com/zcontent/icalendar
 require_once 'lib/zapcallib.php';
@@ -43,7 +44,11 @@ function set_date($req)
 
     # Radio button options
     # Only without manual date entry
-    if (!$req->start_date || !$req->end_date) {
+    if ($req->start_date || $req->end_date) {
+        # Partial manual date fallback
+        $req->start_date = ($req->start_date) ?: $today;
+        $req->end_date = ($req->end_date) ?: $next_year;
+    } else {
         switch ($req->date_radio) {
           case 'today':
             $req->start_date = $today;
@@ -70,10 +75,6 @@ function set_date($req)
             $req->end_date = $next_year;
             break;
         }
-    } else {
-        # Partial manual date fallback
-        $req->start_date = ($req->start_date) ?: $today;
-        $req->end_date = ($req->end_date) ?: $next_year;
     }
 
     unset($req->date_radio);
@@ -93,17 +94,22 @@ function set_categories($req)
         }
     }
 
+    #var_dump($req);
     return $req;
 }
 
+
+/**
+ * Find matches
+ * todo: Split into 3 clear mini-functions
+ */
+
 # Compare $req and $rss
 # e.g., foreach $match: $ics->export();
-function filter_feed($req, $rss)
+function filter_categories($req, $rss)
 {
-    # Populate $req->matches with SimpleXMLElements
     $req->matches = [];
 
-    # Categories
     # Add all possible matches
     if (empty($req->category)) {
         $req->matches = $rss;
@@ -117,43 +123,52 @@ function filter_feed($req, $rss)
         }
     }
 
-    # Date
-    # Subtract invalid matches
-    # todo
+    #var_dump($req->matches);
+    return $req->matches;
+}
 
+# Filter by radio buttons
+# todo: Make it independent of filter_categories() output
+function filter_options($req, $rss)
+{
+    # Prevent warnings
+    $req->is_virtual = (isset($req->is_virtual)) ?: false;
+    $req->is_featured = (isset($req->is_featured)) ?: false;
+    $req->is_cancelled = (isset($req->is_cancelled)) ?: false;
 
-    # Filter By
     # Subtract invalid matches
     # https://stackoverflow.com/a/622363
-    foreach ($req->matches as $match) {
-        # Prevent warnings
-        $req->is_virtual = (isset($req->is_virtual)) ?: false;
-        $req->is_featured = (isset($req->is_featured)) ?: false;
-        $req->is_cancelled = (isset($req->is_cancelled)) ?: false;
+    if (!empty($req->matches)) {
+        foreach ($req->matches->item as $match) {
+            $ns = $match->children('bc', true);
+            #var_dump($ns);
 
-        # is_virtual mismatch
-        if ($req->is_virtual
-        && !$match->xpath('//bc:is_virtual')) {
-            unset($req->match);
-        }
+            # is_virtual mismatch
+            if ($req->is_virtual && !$ns->is_virtual) {
+                unset($req->$match);
+                var_dump($match);
+            }
 
-        # is_featured mismatch
-        if ($req->is_featured
-        && !$match->xpath('//bc:is_featured')
-        || !$match->xpath('//bc:is_featured_at_location')) {
-            unset($req->match);
-        }
+            # is_featured mismatch
+            if ($req->is_featured && !$ns->is_featured || !$ns->is_featured_at_location) {
+                unset($req->$match);
+            }
 
-        # is_cancelled mismatch
-        # Note default logic: hide cancelled
-        if (!$req->is_cancelled
-                && $match->xpath('//bc:is_cancelled')) {
-            unset($req->match);
+            # is_cancelled mismatch
+            # Note default logic: hide cancelled
+            if (!$req->is_cancelled && $ns->is_cancelled) {
+                unset($req->$match);
+            }
         }
     }
 
     var_dump($req->matches);
-    return $req;
+    return $req->matches;
+}
+
+function filter_date($req, $rss)
+{
+    return false;
 }
 
 
@@ -169,7 +184,8 @@ function filter_feed($req, $rss)
  */
 
 echo '<pre>';
-#var_dump($_POST);
 #var_dump($req);
-var_dump(filter_feed($req, $rss));
+#var_dump($rss);
+filter_categories($req, $rss);
+filter_options($req, $rss);
 echo '</pre>';
