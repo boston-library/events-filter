@@ -11,7 +11,6 @@ Feed::$cacheExpire = '+1 hour';
 
 $url = 'https://bpl.bibliocommons.com/events/rss/all';
 $rss = Feed::loadRss($url);
-#$rss->registerXPathNamespace('bc', 'http://bibliocommons.com/rss/1.0/modules/event/');
 
 # https://github.com/zcontent/icalendar
 require_once 'lib/zapcallib.php';
@@ -97,7 +96,6 @@ function set_categories($req)
         }
     }
 
-    #var_dump($req);
     return $req;
 }
 
@@ -107,10 +105,6 @@ function set_categories($req)
  * todo: Split into 3 clear mini-functions
  * todo: Move to the Parse class
  */
-
-# Instantiate the $req->matches object
-$req->matches = new stdClass();
-$req->matches = get_categories($req, $rss);
 
 # Compare $req and $rss
 # Probs not called directly in production
@@ -122,7 +116,9 @@ function get_categories($req, $rss)
 
     # Add all possible matches
     if (empty($req->category)) {
-        $out = $rss;
+        foreach ($rss->item as $event) {
+            array_push($out, $event);
+        }
     } else {
         foreach ($req->category as $filter) {
             foreach ($rss->item as $event) {
@@ -134,16 +130,41 @@ function get_categories($req, $rss)
     }
 
     #return (object) $out;
-    return $out;
+    return (array) $out;
 }
 
-# Filter by radio buttons
-# todo: Clarify get_categories() relationship
+/*
+# todo: Make this work
+function search_namespace($needle, $haystack)
+{
+    return (!is_object($haystack))
+        ? false
+        : (
+            function ($haystack) {
+                $ns = $haystack->children('bc', true);
+                return $ns->{$needle};
+            }
+        );
+}
+*/
+
+/**
+ * Filter by radio buttons
+ *
+ * It should be:
+ *  - online checked = only online
+ *  - online unchecked = all events
+ *  - featured checked = only featured
+ *  - featured unchecked = all events
+ *  - hide cancelled by default
+ *  - if cancelled checked, include
+ *
+ * todo: Clarify get_categories() relationship
+ */
 function filter_options($req, $rss)
 {
     # IO arrays
     $in = get_categories($req, $rss);
-    #var_dump($in);
     $out = [];
 
     # Prevent warnings
@@ -151,45 +172,72 @@ function filter_options($req, $rss)
     $req->is_featured = (isset($req->is_featured)) ?: false;
     $req->is_cancelled = (isset($req->is_cancelled)) ?: false;
 
-    # Subtract invalid matches
+    # Add matches to $out
     # https://stackoverflow.com/a/622363
     if (!empty($in)) {
         foreach ($in->item as $match) {
             # Define namespace
+            #var_dump(search_namespace('is_virtual', $match));
             $ns = $match->children('bc', true);
+            #var_dump($match);
             #var_dump($ns);
+
+            $is_virtual = ($ns->{'is_virtual'} == 'true') ? true : false;
+            if ($req->is_virtual === $is_virtual) {
+                #array_push($out, $match);
+                #var_dump($match);
+            }
+
+            $is_featured = ($ns->{'is_featured'} == 'true') ? true : false;
+            $is_featured_at_location = ($ns->{'is_featured_at_location'} == 'true') ? true : false;
+            if ($req->is_featured === $is_featured
+            || $req->is_featured === $is_featured_at_location) {
+                #var_dump($match);
+                array_push($out, $match);
+            }
+
+
 
             # Cast string to bool for comparisons
             # todo: Don't rely on loose equality
             # https://www.php.net/manual/en/types.comparisons.php
-            $is_virtual = ($ns->{'is_virtual'} == 'true') ? true : false;
-            $is_featured = ($ns->{'is_featured'} == 'true'
-                || $ns->{'is_featured_at_location'} == 'true') ? true : false;
-            $is_cancelled = ($ns->{'is_cancelled'} == 'true') ? true : false;
+            /*
+            $is_virtual = ($ns->{'is_virtual'} = 'true') ? true : false;
+            $is_featured = ($ns->{'is_featured'} = 'true'
+                || $ns->{'is_featured_at_location'} = 'true') ? true : false;
+            $is_cancelled = ($ns->{'is_cancelled'} = 'true') ? true : false;
 
-            var_dump($req->is_virtual);
-            var_dump($ns->{'is_virtual'});
-            var_dump($is_virtual);
+            /*
+            var_dump($req->is_featured);
+            var_dump($is_featured);
+            var_dump($ns->{'is_featured'});
             echo "\n\n";
-
+            *
 
             # is_virtual match
             if ($req->is_virtual === $is_virtual) {
                 array_push($out, $match);
             }
 
+            /*
             # is_featured match
-            if ($req->is_featured === $is_featured) {
+            if ($req->is_featured = $is_featured) {
+                #var_dump($match);
                 array_push($out, $match);
+                var_dump($out);
             }
+            *
 
             # is_cancelled mismatch
             # Note default logic: hide cancelled
             if ($req->is_cancelled !== $is_cancelled) {
                 array_push($out, $match);
             }
+            */
         }
     }
+
+    var_dump($out);
 
     return (object) $out;
 }
@@ -216,6 +264,7 @@ echo '<pre>';
 #var_dump($req);
 #var_dump($rss);
 #var_dump($req->matches);
-var_dump(filter_options($req, $rss));
+var_dump($rss);
+#var_dump($matches);
 #filter_options($req, $rss);
 echo '</pre>';
