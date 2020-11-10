@@ -169,14 +169,17 @@ function filter_date(object $req, object $rss)
     $out = [];
 
     # $req dates
-    $start_date = new DateTime($req->start_date);
-    $end_date = new DateTime($req->end_date);
+    #$start_date = new DateTime($req->start_date);
+    #$end_date = new DateTime($req->end_date);
+    $start_date = strtotime($req->start_date);
+    $end_date = strtotime($req->end_date);
 
     # Add matches to $out
     foreach ($in as $match) {
         # Define namespace
         $ns = $match->children('bc', true);
-        $event_date = new DateTime($ns->{'start_date'});
+        #$event_date = new DateTime($ns->{'start_date'});
+        $event_date = strtotime($ns->{'start_date'});
 
         if (between_dates($event_date, $start_date, $end_date)) {
             array_push($out, $match);
@@ -189,9 +192,10 @@ function filter_date(object $req, object $rss)
 /**
  * https://stackoverflow.com/a/9065661
  */
-function between_dates(DateTime $date, DateTime $start, DateTime $end)
+function between_dates($date, $start, $end)
 {
-    return $date > $start && $date < $end;
+    # Add +1 day to $end in seconds
+    return (($date >= $start) && ($date <= $end + 86400));
 }
 
 /**
