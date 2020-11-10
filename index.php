@@ -84,7 +84,7 @@ $meta = new Metadata();
     <fieldset>
       <legend>Filter By</legend>
 
-      <input type="checkbox" id="is_virtual" name="is_virtual" value="true" />
+      <input type="checkbox" id="is_virtual" name="is_virtual" value="true" checked />
       <label for="is_virtual">Online Events</label><br />
 
       <input type="checkbox" id="is_featured" name="is_featured" value="true" />
