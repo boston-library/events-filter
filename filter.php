@@ -109,6 +109,12 @@ function set_categories(object $req)
  *
  * Note the new object instead of $req
  *
+ * The current order is:
+ *  - get_categories() returns $out with all matching checkboxes,
+ *    or all events if nothing is checked
+ *  - filter_date() returns $out within the $req date period
+ * - filter_options() returns $out if certain boolean conditions match
+ *
  * todo: Split into 3 clear mini-functions
  * todo: Move to the Parse class
  */
@@ -155,6 +161,39 @@ function search_namespace($needle, $haystack)
 }
 */
 
+# todo: Clarify the filter function relationships
+function filter_date(object $req, object $rss)
+{
+    # IO arrays
+    $in = get_categories($req, $rss);
+    $out = [];
+
+    # $req dates
+    $start_date = new DateTime($req->start_date);
+    $end_date = new DateTime($req->end_date);
+
+    # Add matches to $out
+    foreach ($in as $match) {
+        # Define namespace
+        $ns = $match->children('bc', true);
+        $event_date = new DateTime($ns->{'start_date'});
+
+        if (between_dates($event_date, $start_date, $end_date)) {
+            array_push($out, $match);
+        }
+    }
+
+    return (array) $out;
+}
+
+/**
+ * https://stackoverflow.com/a/9065661
+ */
+function between_dates(DateTime $date, DateTime $start, DateTime $end)
+{
+    return $date > $start && $date < $end;
+}
+
 /**
  * Filter by radio buttons
  *
@@ -171,7 +210,7 @@ function search_namespace($needle, $haystack)
 function filter_options(object $req, object $rss)
 {
     # IO arrays
-    $in = get_categories($req, $rss);
+    $in = filter_date($req, $rss);
     $out = [];
 
     # Prevent warnings
@@ -223,38 +262,6 @@ function filter_options(object $req, object $rss)
     return (array) $out;
 }
 
-# todo: Clarify the filter function relationships
-function filter_date(object $req, object $rss)
-{
-    # IO arrays
-    $in = filter_options($req, $rss);
-    $out = [];
-
-    # Add matches to $out
-    if (!empty($in)) {
-        foreach ($in as $match) {
-            # Define namespace
-            $ns = $match->children('bc', true);
-            if ($ns->{'start_date'}) {
-                #echo 'yes';
-                $event_date = new DateTime($ns->{'start_date'});
-                $start_date = new DateTime($req->start_date);
-                $end_date = new DateTime($req->end_date);
-                #$interval = new DatePeriod($start_date, $end_date);
-                var_dump(between_dates($event_date, $start_date, $end_date));
-            }
-        }
-    }
-}
-
-/**
- * https://stackoverflow.com/a/9065661
- */
-function between_dates(DateTime $date, DateTime $start, DateTime $end)
-{
-    return (bool) $date > $start && $date < $end;
-}
-
 
 /**
  * Output HTML, iCal, and CSV
@@ -272,7 +279,6 @@ echo '<pre>';
 #var_dump($rss);
 #var_dump($req->matches);
 $matches = filter_options($req, $rss);
-
-var_dump(filter_date($req, $rss));
+var_dump($matches);
 #filter_options($req, $rss);
 echo '</pre>';
