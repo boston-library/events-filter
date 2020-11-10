@@ -173,73 +173,47 @@ function filter_options($req, $rss)
     $req->is_cancelled = (isset($req->is_cancelled)) ?: false;
 
     # Add matches to $out
-    # https://stackoverflow.com/a/622363
     if (!empty($in)) {
-        foreach ($in->item as $match) {
+        foreach ($in as $match) {
             # Define namespace
-            #var_dump(search_namespace('is_virtual', $match));
             $ns = $match->children('bc', true);
-            #var_dump($match);
-            #var_dump($ns);
+            #var_dump(search_namespace('is_virtual', $match));
 
-            $is_virtual = ($ns->{'is_virtual'} == 'true') ? true : false;
-            if ($req->is_virtual === $is_virtual) {
-                #array_push($out, $match);
-                #var_dump($match);
-            }
-
-            $is_featured = ($ns->{'is_featured'} == 'true') ? true : false;
-            $is_featured_at_location = ($ns->{'is_featured_at_location'} == 'true') ? true : false;
-            if ($req->is_featured === $is_featured
-            || $req->is_featured === $is_featured_at_location) {
-                #var_dump($match);
-                array_push($out, $match);
-            }
-
-
-
-            # Cast string to bool for comparisons
             # todo: Don't rely on loose equality
             # https://www.php.net/manual/en/types.comparisons.php
-            /*
-            $is_virtual = ($ns->{'is_virtual'} = 'true') ? true : false;
-            $is_featured = ($ns->{'is_featured'} = 'true'
-                || $ns->{'is_featured_at_location'} = 'true') ? true : false;
-            $is_cancelled = ($ns->{'is_cancelled'} = 'true') ? true : false;
 
-            /*
-            var_dump($req->is_featured);
-            var_dump($is_featured);
-            var_dump($ns->{'is_featured'});
-            echo "\n\n";
-            *
-
-            # is_virtual match
-            if ($req->is_virtual === $is_virtual) {
+            # Filter for virtual events
+            $is_virtual = ($ns->{'is_virtual'} == 'true') ? true : false;
+            if ($req->is_virtual === true && $is_virtual === true) {
                 array_push($out, $match);
+                #unset($match);
+            }
+
+            # Filter for featured events
+            $is_featured = ($ns->{'is_featured'} == 'true') ? true : false;
+            $is_featured_at_location = ($ns->{'is_featured_at_location'} == 'true') ? true : false;
+            if (($req->is_featured === true && $is_featured === true)
+             || ($req->is_featured === true && $is_featured_at_location === true)) {
+                array_push($out, $match);
+                #unset($match);
             }
 
             /*
-            # is_featured match
-            if ($req->is_featured = $is_featured) {
-                #var_dump($match);
+            # Hide cancelled unless checked
+            $is_cancelled = ($ns->{'is_cancelled'} == 'true') ? true : false;
+            if ($req->is_cancelled && $is_cancelled) {
                 array_push($out, $match);
-                var_dump($out);
-            }
-            *
-
-            # is_cancelled mismatch
-            # Note default logic: hide cancelled
-            if ($req->is_cancelled !== $is_cancelled) {
-                array_push($out, $match);
+            } else {
+                if (!$is_cancelled) {
+                    array_push($out, $match);
+                }
             }
             */
         }
     }
 
-    var_dump($out);
-
-    return (object) $out;
+    #var_dump($out);
+    return $out;
 }
 
 function filter_date($req, $rss)
@@ -264,7 +238,8 @@ echo '<pre>';
 #var_dump($req);
 #var_dump($rss);
 #var_dump($req->matches);
-var_dump($rss);
-#var_dump($matches);
+$matches = filter_options($req, $rss);
+
+var_dump($matches);
 #filter_options($req, $rss);
 echo '</pre>';
