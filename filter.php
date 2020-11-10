@@ -32,7 +32,7 @@ $req = set_date($req);
 $req = set_categories($req);
 
 # Set the start and end dates
-function set_date($req)
+function set_date(object $req)
 {
     # Prevent warnings
     $req->date_radio = (isset($req->date_radio)) ?: false;
@@ -88,7 +88,7 @@ function set_date($req)
 
 # Set the categories (all form checkboxes)
 # Strips the bin2hex() suffixes and adds $req->category
-function set_categories($req)
+function set_categories(object $req)
 {
     $req->category = [];
     $regex = '/^category_.{4}$/';
@@ -106,6 +106,9 @@ function set_categories($req)
 
 /**
  * Find matches
+ *
+ * Note the new object instead of $req
+ *
  * todo: Split into 3 clear mini-functions
  * todo: Move to the Parse class
  */
@@ -113,7 +116,7 @@ function set_categories($req)
 # Compare $req and $rss
 # Probs not called directly in production
 # todo: Clarify scoping/privacy with a class
-function get_categories($req, $rss)
+function get_categories(object $req, object $rss)
 {
     # Output array
     $out = [];
@@ -165,7 +168,7 @@ function search_namespace($needle, $haystack)
  *
  * todo: Clarify get_categories() relationship
  */
-function filter_options($req, $rss)
+function filter_options(object $req, object $rss)
 {
     # IO arrays
     $in = get_categories($req, $rss);
@@ -220,10 +223,36 @@ function filter_options($req, $rss)
     return (array) $out;
 }
 
-function filter_date($req, $rss)
+# todo: Clarify the filter function relationships
+function filter_date(object $req, object $rss)
 {
-    # todo
-    return false;
+    # IO arrays
+    $in = filter_options($req, $rss);
+    $out = [];
+
+    # Add matches to $out
+    if (!empty($in)) {
+        foreach ($in as $match) {
+            # Define namespace
+            $ns = $match->children('bc', true);
+            if ($ns->{'start_date'}) {
+                #echo 'yes';
+                $event_date = new DateTime($ns->{'start_date'});
+                $start_date = new DateTime($req->start_date);
+                $end_date = new DateTime($req->end_date);
+                #$interval = new DatePeriod($start_date, $end_date);
+                var_dump(between_dates($event_date, $start_date, $end_date));
+            }
+        }
+    }
+}
+
+/**
+ * https://stackoverflow.com/a/9065661
+ */
+function between_dates(DateTime $date, DateTime $start, DateTime $end)
+{
+    return (bool) $date > $start && $date < $end;
 }
 
 
@@ -244,6 +273,6 @@ echo '<pre>';
 #var_dump($req->matches);
 $matches = filter_options($req, $rss);
 
-var_dump($matches);
+var_dump(filter_date($req, $rss));
 #filter_options($req, $rss);
 echo '</pre>';
