@@ -1,5 +1,8 @@
 <?php
 
+# Force local timezone
+date_default_timezone_set('EST');
+
 /**
  * Libraries
  */
@@ -35,7 +38,8 @@ function set_date($req)
     $req->date_radio = (isset($req->date_radio)) ?: false;
 
     # Common useful dates
-    $f = 'Y-m-d';
+    # todo: Move to Metadata class
+    $f = 'c';
     $today = date($f);
     $tomorrow = date($f, strtotime('+1 day'));
     $this_saturday = date($f, strtotime('saturday'));
@@ -79,7 +83,7 @@ function set_date($req)
     }
 
     unset($req->date_radio);
-    return $req;
+    return (object) $req;
 }
 
 # Set the categories (all form checkboxes)
@@ -96,7 +100,7 @@ function set_categories($req)
         }
     }
 
-    return $req;
+    return (object) $req;
 }
 
 
@@ -111,7 +115,7 @@ function set_categories($req)
 # todo: Clarify scoping/privacy with a class
 function get_categories($req, $rss)
 {
-    # Collect output in new array
+    # Output array
     $out = [];
 
     # Add all possible matches
@@ -213,7 +217,7 @@ function filter_options($req, $rss)
     }
 
     #var_dump($out);
-    return $out;
+    return (array) $out;
 }
 
 function filter_date($req, $rss)
