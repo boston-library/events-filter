@@ -85,13 +85,13 @@ $meta = new Metadata();
       <legend>Filter By</legend>
 
       <input type="checkbox" id="is_virtual" name="is_virtual" value="true" checked />
-      <label for="is_virtual">Online Events</label><br />
+      <label for="is_virtual">Only Online Events</label><br />
 
       <input type="checkbox" id="is_featured" name="is_featured" value="true" />
-      <label for="is_featured">Featured Events</label><br />
+      <label for="is_featured">Only Featured Events</label><br />
 
       <input type="checkbox" id="is_cancelled" name="is_cancelled" value="true" />
-      <label for="is_cancelled">Cancelled Events</label><br />
+      <label for="is_cancelled">Include Cancelled Events</label><br />
     </fieldset>
 
     <input type='submit' value='Submit'>

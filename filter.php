@@ -224,7 +224,7 @@ function filter_options(object $req, object $rss)
 
     # Add matches to $out
     if (!empty($in)) {
-        foreach ($in as $match) {
+        foreach ($in as $k => $match) {
             # Define namespace
             $ns = $match->children('bc', true);
             #var_dump(search_namespace('is_virtual', $match));
@@ -236,6 +236,7 @@ function filter_options(object $req, object $rss)
             $is_virtual = ($ns->{'is_virtual'} == 'true') ? true : false;
             $is_featured = ($ns->{'is_featured'} == 'true') ? true : false;
             $is_featured_at_location = ($ns->{'is_featured_at_location'} == 'true') ? true : false;
+            $is_cancelled = ($ns->{'is_cancelled'} == 'true') ? true : false;
 
             # Virtual and featured
             if ($req->is_virtual && $req->is_featured === true) {
@@ -254,17 +255,10 @@ function filter_options(object $req, object $rss)
                 }
             }
 
-            /*
             # Hide cancelled unless checked
-            $is_cancelled = ($ns->{'is_cancelled'} == 'true') ? true : false;
-            if ($req->is_cancelled && $is_cancelled) {
-                array_push($out, $match);
-            } else {
-                if (!$is_cancelled) {
-                    array_push($out, $match);
-                }
+            if ($req->is_cancelled === false && $is_cancelled === true) {
+                array_pop($out);
             }
-            */
         }
     }
 
