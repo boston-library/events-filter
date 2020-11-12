@@ -232,20 +232,26 @@ function filter_options(object $req, object $rss)
             # todo: Don't rely on loose equality
             # https://www.php.net/manual/en/types.comparisons.php
 
-            # Filter for virtual events
+            # Boolean variables
             $is_virtual = ($ns->{'is_virtual'} == 'true') ? true : false;
-            if ($req->is_virtual === true && $is_virtual === true) {
-                array_push($out, $match);
-                #unset($match);
-            }
-
-            # Filter for featured events
             $is_featured = ($ns->{'is_featured'} == 'true') ? true : false;
             $is_featured_at_location = ($ns->{'is_featured_at_location'} == 'true') ? true : false;
-            if (($req->is_featured === true && $is_featured === true)
-             || ($req->is_featured === true && $is_featured_at_location === true)) {
-                array_push($out, $match);
-                #unset($match);
+
+            # Virtual and featured
+            if ($req->is_virtual && $req->is_featured === true) {
+                if ($is_virtual && ($is_featured || $is_featured_at_location) === true) {
+                    array_push($out, $match);
+                }
+            } else {
+                # Virtual only
+                if ($req->is_virtual && $is_virtual === true) {
+                    array_push($out, $match);
+                }
+
+                # Featured only
+                if (($req->is_featured && ($is_featured || $is_featured_at_location) === true)) {
+                    array_push($out, $match);
+                }
             }
 
             /*
