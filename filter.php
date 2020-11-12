@@ -34,22 +34,19 @@ $req = set_categories($req);
 # Set the start and end dates
 function set_date(object $req)
 {
-    # Prevent warnings
-    $req->date_radio = (isset($req->date_radio)) ?: false;
-
     # Common useful dates
     # todo: Move to Metadata class
     $f = 'c';
     $today = date($f);
     $tomorrow = date($f, strtotime('+1 day'));
-    $this_saturday = date($f, strtotime('saturday'));
-    $this_sunday = date($f, strtotime('sunday'));
+    $this_saturday = date($f, strtotime('next saturday'));
+    $this_sunday = date($f, strtotime('next sunday'));
     $next_week = date($f, strtotime('+7 days'));
     $next_year = date($f, strtotime('+1 year'));
 
     # Radio button options
     # Only applied absent date entry
-    if ($req->start_date || $req->end_date) {
+    if (!empty($req->start_date) || !empty($req->end_date)) {
         # Partial manual date fallback
         $req->start_date = ($req->start_date) ?: $today;
         $req->end_date = ($req->end_date) ?: $next_year;
@@ -127,12 +124,13 @@ function get_categories(object $req, object $rss)
     # Output array
     $out = [];
 
-    # Add all possible matches
     if (empty($req->category)) {
+        # Add all possible matches
         foreach ($rss->item as $event) {
             array_push($out, $event);
         }
     } else {
+        # Add checked categories only
         foreach ($req->category as $filter) {
             foreach ($rss->item as $event) {
                 if (in_array($filter, get_object_vars($event->category))) {
@@ -229,10 +227,9 @@ function filter_options(object $req, object $rss)
             $ns = $match->children('bc', true);
             #var_dump(search_namespace('is_virtual', $match));
 
+            # Boolean variables
             # todo: Don't rely on loose equality
             # https://www.php.net/manual/en/types.comparisons.php
-
-            # Boolean variables
             $is_virtual = ($ns->{'is_virtual'} == 'true') ? true : false;
             $is_featured = ($ns->{'is_featured'} == 'true') ? true : false;
             $is_featured_at_location = ($ns->{'is_featured_at_location'} == 'true') ? true : false;
