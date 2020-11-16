@@ -2,6 +2,7 @@
 
 # Force local timezone
 date_default_timezone_set('EST');
+ini_set('default_charset', 'UTF-8');
 
 /**
  * Libraries
@@ -15,10 +16,17 @@ Feed::$cacheExpire = '+1 hour';
 $url = 'https://bpl.bibliocommons.com/events/rss/all';
 $rss = Feed::loadRss($url);
 
+# https://gist.github.com/pamelafox-coursera/5359246
+require_once 'lib/CalendarHelper.class.php';
+
+# https://github.com/Frimkron/PHPCalFeed
+#require_once 'lib/calendar/calendar.php';
+
+/*
 # https://github.com/zcontent/icalendar
 require_once 'lib/zapcallib.php';
 $ics = new ZCiCal();
-
+*/
 
 /**
  * Parse RSS
@@ -32,8 +40,11 @@ $req = set_date($req);
 $req = set_categories($req);
 
 # Set the start and end dates
-function set_date(object $req)
+function set_date($req)
 {
+    # Prevent warnings
+    $req->date_radio = (isset($req->date_radio)) ? $req->date_radio : false;
+
     # Common useful dates
     # todo: Move to Metadata class
     $f = 'c';
@@ -85,14 +96,15 @@ function set_date(object $req)
 
 # Set the categories (all form checkboxes)
 # Strips the bin2hex() suffixes and adds $req->category
-function set_categories(object $req)
+function set_categories($req)
 {
     $req->category = [];
     $regex = '/^category_.{4}$/';
 
     foreach ($req as $k => $v) {
         if (preg_match($regex, $k)) {
-            array_push($req->category, $v);
+            $v_utf8 = quoted_printable_decode($v);
+            array_push($req->category, $v_utf8);
             unset($req->$k);
         }
     }
@@ -119,7 +131,7 @@ function set_categories(object $req)
 # Compare $req and $rss
 # Probs not called directly in production
 # todo: Clarify scoping/privacy with a class
-function get_categories(object $req, object $rss)
+function get_categories($req, $rss)
 {
     # Output array
     $out = [];
@@ -160,7 +172,7 @@ function search_namespace($needle, $haystack)
 */
 
 # todo: Clarify the filter function relationships
-function filter_date(object $req, object $rss)
+function filter_date($req, $rss)
 {
     # IO arrays
     $in = get_categories($req, $rss);
@@ -209,7 +221,7 @@ function between_dates($date, $start, $end)
  *
  * todo: Clarify get_categories() relationship
  */
-function filter_options(object $req, object $rss)
+function filter_options($req, $rss)
 {
     # IO arrays
     $in = filter_date($req, $rss);
@@ -261,14 +273,67 @@ function filter_options(object $req, object $rss)
 
     #var_dump($out);
     return (array) $out;
+    #return (object) $out;
 }
 
 
 /**
  * Output HTML, iCal, and CSV
+ * Expected JSON input:
+ *
+ * {
+ *  "name": "Mark's Calendar",
+ *   "events": [
+ *     {
+ *       "name": "Super Fun Party",
+ *       "date": "2013-02-28",
+ *       "time": "20:30",
+ *       "duration": "4h 30m"
+ *     },
+ *     {
+ *       "name": "How to be Awesome - A Lecture",
+ *       "date": "2013-09-10",
+ *       "description": "A talk about how to be more awesome.",
+ *       "url": "http://example.com/awesome"
+ *     }
+ *   ],
+ *   "recurring-events": [
+ *     {
+ *       "name": "Ada Lovelace Day",
+ *       "recurrence": "yearly on 256th day",
+ *       "description": "Celebrating the world's first computer programmer"
+ *     }
+ *   ]
+ * }
  */
 
-# todo
+
+function rss2ics($matches)
+{
+    $json = array_map('json_encode', $matches);
+
+    foreach ($matches as $match) {
+        $ns = $match->children('bc', true);
+
+        $parameters = [
+            'start' => strval($ns->{'start_date'}),
+            'end' => strval($ns->{'end_date'}),
+            'summary' => strval($match->title),
+            'description' => strval($match->description),
+            'location' => '',
+            'url' => strval($match->link),
+        ];
+        var_dump($parameters);
+
+        $event = new CalendarEvent($parameters);
+        var_dump($event);
+
+        #$event->addNode(new ZCiCalDataNode("DTSTART:" . $ns->{'start_date'}));
+        #$event->addNode(new ZCiCalDataNode("DTEND:" . $ns->{'end_date'}));
+    }
+    #var_dump($event->export());
+    #return $event->export();
+}
 
 
 /**
@@ -276,10 +341,7 @@ function filter_options(object $req, object $rss)
  */
 
 echo '<pre>';
-#var_dump($req);
-#var_dump($rss);
-#var_dump($req->matches);
 $matches = filter_options($req, $rss);
 var_dump($matches);
-#filter_options($req, $rss);
+var_dump(rss2ics($matches));
 echo '</pre>';

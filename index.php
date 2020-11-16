@@ -42,7 +42,8 @@ $meta = new Metadata();
 
       From
       <input type='date' name='start_date' id='start_date'
-        min='<?= $today ?>' value='' /><br />
+        min='<?= strftime('%Y-%m-%d', strtotime('today')) ?>'
+        value='' /><br />
 
       To
       <input type='date' name='end_date' id='end_date'

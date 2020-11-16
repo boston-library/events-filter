@@ -12,10 +12,12 @@ class Metadata
         $output = '';
         foreach ($values as $v) {
             $id_tmp = 'category_'.bin2hex(random_bytes(2));
+            $v_html = quoted_printable_encode($v);
+
             $output .= <<<EOT
               <input type='checkbox'
                 name='$id_tmp' id='$id_tmp'
-                value="$v" />
+                value="$v_html" />
               <label for='$id_tmp'>$v</label>
               <br />
 EOT;
