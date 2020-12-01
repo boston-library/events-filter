@@ -9,25 +9,14 @@ ini_set('default_charset', 'UTF-8');
  * Libraries
  */
 
+require_once 'autoload.php';
+
 # https://github.com/dg/rss-php
-require_once 'lib/feed.php';
 Feed::$cacheDir = 'tmp';
 Feed::$cacheExpire = '+1 hour';
 
 $url = 'https://bpl.bibliocommons.com/events/rss/all';
 $rss = Feed::loadRss($url);
-
-# https://gist.github.com/pamelafox-coursera/5359246
-require_once 'lib/CalendarHelper.class.php';
-
-# https://github.com/Frimkron/PHPCalFeed
-#require_once 'lib/calendar/calendar.php';
-
-/*
-# https://github.com/zcontent/icalendar
-require_once 'lib/zapcallib.php';
-$ics = new ZCiCal();
-*/
 
 
 /**
@@ -181,8 +170,6 @@ function filter_date($req, $rss)
     $out = [];
 
     # $req dates
-    #$start_date = new DateTime($req->start_date);
-    #$end_date = new DateTime($req->end_date);
     $start_date = strtotime($req->start_date);
     $end_date = strtotime($req->end_date);
 
@@ -190,7 +177,6 @@ function filter_date($req, $rss)
     foreach ($in as $match) {
         # Define namespace
         $ns = $match->children('bc', true);
-        #$event_date = new DateTime($ns->{'start_date'});
         $event_date = strtotime($ns->{'start_date'});
 
         if (between_dates($event_date, $start_date, $end_date)) {
@@ -209,6 +195,7 @@ function between_dates($date, $start, $end)
     # Add +1 day to $end in seconds
     return (($date >= $start) && ($date <= $end + 86400));
 }
+
 
 /**
  * Filter by radio buttons
@@ -239,7 +226,6 @@ function filter_options($req, $rss)
         foreach ($in as $k => $match) {
             # Define namespace
             $ns = $match->children('bc', true);
-            #var_dump(search_namespace('is_virtual', $match));
 
             # Boolean variables
             # todo: Don't rely on loose equality
@@ -273,7 +259,6 @@ function filter_options($req, $rss)
         }
     }
 
-    #var_dump($out);
     return (array) $out;
     #return (object) $out;
 }
@@ -315,25 +300,28 @@ function rss2ics($matches)
 
     foreach ($matches as $match) {
         $ns = $match->children('bc', true);
-        var_dump($ns->{'contact'});
+        $organizer = implode("\n", [
+            $ns->{'contact'}->{'name'},
+            $ns->{'contact'}->{'phone'},
+            $ns->{'contact'}->{'email'},
+        ]);
 
         $parameters = [
             'start' => strval($ns->{'start_date'}),
             'end' => strval($ns->{'end_date'}),
             'summary' => strval($match->title),
             'description' => strval($match->description),
-            'location' => '',
+            # todo: Fix the location property
+            'location' => ($req->is_virtual) ? 'Online' : 'NEED TO FIND LOCATION',
             'url' => strval($match->link),
-            'organizer' => strval($ns->{'contact'}),
+            'organizer' => strval($organizer),
         ];
 
         $event = new CalendarEvent($parameters);
         array_push($output, $event);
-        #var_dump($event);
     }
 
     $return = new Calendar(['events' => $output]);
-    #var_dump($event->export());
     return $return->generateString();
 }
 

@@ -1,8 +1,7 @@
 <?php
 
-require_once 'lib/metadata.php';
+require_once 'autoload.php';
 $meta = new Metadata();
-
 ?>
 
 <!doctype html>

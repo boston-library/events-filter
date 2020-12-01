@@ -14,13 +14,13 @@ class Metadata
             $id_tmp = 'category_'.bin2hex(random_bytes(2));
             $v_html = quoted_printable_encode($v);
 
-            $output .= <<<EOT
+            $output .= <<<HTML
               <input type='checkbox'
                 name='$id_tmp' id='$id_tmp'
                 value="$v_html" />
               <label for='$id_tmp'>$v</label>
               <br />
-EOT;
+HTML;
         }
         return $output;
     }
