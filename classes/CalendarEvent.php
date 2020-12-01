@@ -122,25 +122,25 @@ class CalendarEvent
         $created = new DateTime();
         $content = '';
 
-        $content = "BEGIN:VEVENT\r\n"
-                 . "UID:{$this->uid}\r\n"
-                 . "DTSTART:{$this->formatDate($this->start)}\r\n"
-                 . "DTEND:{$this->formatDate($this->end)}\r\n"
-                 . "DTSTAMP:{$this->formatDate($this->start)}\r\n"
-                 . "CREATED:{$this->formatDate($created)}\r\n"
-                 . "DESCRIPTION:{$this->formatValue($this->description)}\r\n"
-                 . "LAST-MODIFIED:{$this->formatDate($this->start)}\r\n"
-                 . "LOCATION:{$this->location}\r\n"
+        $content = "BEGIN:VEVENT\n"
+                 . "UID:{$this->uid}\n"
+                 . "DTSTART:{$this->formatDate($this->start)}\n"
+                 . "DTEND:{$this->formatDate($this->end)}\n"
+                 . "DTSTAMP:{$this->formatDate($this->start)}\n"
+                 . "CREATED:{$this->formatDate($created)}\n"
+                 . "DESCRIPTION:{$this->formatValue($this->description)}\n"
+                 . "LAST-MODIFIED:{$this->formatDate($this->start)}\n"
+                 . "LOCATION:{$this->location}\n"
 
                  # Custom fields
-                 . "URL:{$this->url}\r\n"
-                 . "ORGANIZER:{$this->contact}\r\n"
+                 . "URL:{$this->url}\n"
+                 . "ORGANIZER:{$this->contact}\n"
 
-                 . "SUMMARY:{$this->formatValue($this->summary)}\r\n"
-                 . "SEQUENCE:0\r\n"
-                 . "STATUS:CONFIRMED\r\n"
-                 . "TRANSP:OPAQUE\r\n"
-                 . "END:VEVENT\r\n";
+                 . "SUMMARY:{$this->formatValue($this->summary)}\n"
+                 . "SEQUENCE:0\n"
+                 . "STATUS:CONFIRMED\n"
+                 . "TRANSP:OPAQUE\n"
+                 . "END:VEVENT\n";
         return $content;
     }
 }

@@ -55,11 +55,11 @@ class Calendar
      */
     public function generateString()
     {
-        $content = "BEGIN:VCALENDAR\r\n"
-                 . "VERSION:2.0\r\n"
-                 . "PRODID:-//" . $this->author . "//NONSGML//EN\r\n"
-                 . "X-WR-CALNAME:" . $this->title . "\r\n"
-                 . "CALSCALE:GREGORIAN\r\n";
+        $content = "BEGIN:VCALENDAR\n"
+                 . "VERSION:2.0\n"
+                 . "PRODID:-//" . $this->author . "//NONSGML//EN\n"
+                 . "X-WR-CALNAME:" . $this->title . "\n"
+                 . "CALSCALE:GREGORIAN\n";
 
         foreach ($this->events as $event) {
             $content .= $event->generateString();

@@ -364,7 +364,9 @@ function rss2ics($matches = [], $method = '')
 
 echo '<pre>';
 $matches = filter_options($req, $rss);
-var_dump($matches);
-var_dump(rss2ics($matches, 'download'));
+#var_dump($matches);
+#var_dump(rss2ics($matches, 'download'));
 echo '</pre>';
-rss2ics($matches, 'download');
+
+?>
+<a href="<?php rss2ics($matches, 'download')?>">Download ICS</a>
