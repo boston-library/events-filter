@@ -4,6 +4,7 @@
  * Adapted from
  * https://gist.github.com/pamelafox-coursera/5359246
  */
+
 class Calendar
 {
     protected $events;
@@ -14,8 +15,8 @@ class Calendar
     {
         $parameters += array(
           'events' => array(),
-          'title' => 'Calendar',
-          'author' => 'Calender Generator'
+          'title' => 'Event Export',
+          'author' => 'Boston Public Library'
         );
 
         $this->events = $parameters['events'];

@@ -85,6 +85,7 @@ function set_date($req)
     return (object) $req;
 }
 
+
 # Set the categories (all form checkboxes)
 # Strips the bin2hex() suffixes and adds $req->category
 function set_categories($req)
@@ -162,6 +163,7 @@ function search_namespace($needle, $haystack)
 }
 */
 
+
 # todo: Clarify the filter function relationships
 function filter_date($req, $rss)
 {
@@ -186,6 +188,7 @@ function filter_date($req, $rss)
 
     return (array) $out;
 }
+
 
 /**
  * https://stackoverflow.com/a/9065661
@@ -293,18 +296,27 @@ function filter_options($req, $rss)
  *   ]
  * }
  */
-function rss2ics($matches)
+function rss2ics($matches = [], $method = '')
 {
     $json = array_map('json_encode', $matches);
     $output = [];
 
     foreach ($matches as $match) {
         $ns = $match->children('bc', true);
-        $organizer = implode("\n", [
-            $ns->{'contact'}->{'name'},
-            $ns->{'contact'}->{'phone'},
-            $ns->{'contact'}->{'email'},
-        ]);
+
+        /**
+         * If no callback is supplied,
+         * all empty entries of array will be removed
+         * @see https://www.php.net/manual/en/function.array-filter.php
+         */
+        $organizer = implode(
+            "\n",
+            array_filter([
+                $ns->{'contact'}->{'name'},
+                $ns->{'contact'}->{'phone'},
+                $ns->{'contact'}->{'email'},
+            ])
+        );
 
         $parameters = [
             'start' => strval($ns->{'start_date'}),
@@ -312,7 +324,7 @@ function rss2ics($matches)
             'summary' => strval($match->title),
             'description' => strval($match->description),
             # todo: Fix the location property
-            'location' => ($req->is_virtual) ? 'Online' : 'NEED TO FIND LOCATION',
+            #'location' => ($req->is_virtual) ? 'Online' : 'NEED TO FIND LOCATION',
             'url' => strval($match->link),
             'organizer' => strval($organizer),
         ];
@@ -322,7 +334,27 @@ function rss2ics($matches)
     }
 
     $return = new Calendar(['events' => $output]);
-    return $return->generateString();
+    switch ($method) {
+        case 'download':
+            return $return->generateDownload();
+            break;
+
+        case 'ical':
+            return $return->generateString();
+            break;
+
+        case 'html':
+            break;
+
+        default:
+            throw new InvalidArgumentException(
+                '$method must be one of download, ical, or html'
+            );
+            break;
+
+    }
+
+    return false;
 }
 
 
@@ -333,5 +365,6 @@ function rss2ics($matches)
 echo '<pre>';
 $matches = filter_options($req, $rss);
 var_dump($matches);
-var_dump(rss2ics($matches));
+var_dump(rss2ics($matches, 'download'));
 echo '</pre>';
+rss2ics($matches, 'download');
