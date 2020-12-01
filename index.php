@@ -1,7 +1,7 @@
 <?php
 
 require_once 'autoload.php';
-$meta = new Metadata();
+$Metadata = new Metadata();
 ?>
 
 <!doctype html>
@@ -53,31 +53,31 @@ $meta = new Metadata();
     <!-- Locations -->
     <fieldset>
       <legend>Locations</legend>
-      <?= $meta->make_checkboxes('Locations', $meta->locations) ?>
+      <?= $Metadata->checkboxes('Locations', $Metadata->Locations) ?>
     </fieldset>
 
     <!-- Event Types -->
     <fieldset>
       <legend>Event Types</legend>
-      <?= $meta->make_checkboxes('Event Types', $meta->event_types) ?>
+      <?= $Metadata->checkboxes('Event Types', $Metadata->EventTypes) ?>
     </fieldset>
 
     <!-- Programs -->
     <fieldset>
       <legend>Programs</legend>
-      <?= $meta->make_checkboxes('Programs', $meta->programs) ?>
+      <?= $Metadata->checkboxes('Programs', $Metadata->Programs) ?>
     </fieldset>
 
     <!-- Audiences -->
     <fieldset>
       <legend>Audiences</legend>
-      <?= $meta->make_checkboxes('Audiences', $meta->audiences) ?>
+      <?= $Metadata->checkboxes('Audiences', $Metadata->Audiences) ?>
     </fieldset>
 
     <!-- Languages -->
     <fieldset>
       <legend>Languages</legend>
-      <?= $meta->make_checkboxes('Languages', $meta->languages) ?>
+      <?= $Metadata->checkboxes('Languages', $Metadata->Languages) ?>
     </fieldset>
 
     <!-- Options -->

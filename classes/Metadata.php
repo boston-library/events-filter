@@ -3,40 +3,6 @@
 class Metadata
 {
     /**
-     * Functions
-     */
-
-    # Make HTML form checkboxes
-    public function make_checkboxes($label, $values)
-    {
-        $output = '';
-        foreach ($values as $v) {
-            $id_tmp = 'category_'.bin2hex(random_bytes(2));
-            $v_html = quoted_printable_encode($v);
-
-            $output .= <<<HTML
-              <input type='checkbox'
-                name='$id_tmp' id='$id_tmp'
-                value="$v_html" />
-              <label for='$id_tmp'>$v</label>
-              <br />
-HTML;
-        }
-        return $output;
-    }
-
-    # Print plain array list
-    public function pr_array($array)
-    {
-        echo '<pre>';
-        foreach ($array as $a) {
-            echo "$a<br />";
-        }
-        echo '</pre>';
-    }
-
-
-    /**
      * Variables
      *
      * Note there's no public API available to pull metadata from
@@ -47,7 +13,7 @@ HTML;
      */
 
     # Locations
-    public $locations = [
+    public $Locations = [
         'Adams Street',
         'Brighton',
         'Central Library in Copley Square',
@@ -77,7 +43,7 @@ HTML;
     ];
 
     # Event Types
-    public $event_types = [
+    public $EventTypes = [
         'Arts & Crafts',
         'Author Talk',
         'Board of Trustees Meetings',
@@ -108,7 +74,7 @@ HTML;
     ];
 
     # Programs
-    public $programs = [
+    public $Programs = [
         'Central Library Author Talk Series',
         'Future Readers Club',
         'Google Class Series',
@@ -118,7 +84,7 @@ HTML;
     ];
 
     # Audiences
-    public $audiences = [
+    public $Audiences = [
         'Adults',
         'Businesses',
         'Children (Ages 0-5)',
@@ -133,10 +99,44 @@ HTML;
     ];
 
     # Languages
-    public $languages = [
+    public $Languages = [
         'English',
         'Español',
         '國語',
         '粵語',
     ];
+
+    
+    /**
+     * Functions
+     */
+
+    # Make HTML form checkboxes
+    public function checkboxes($label, $values)
+    {
+        $output = '';
+        foreach ($values as $v) {
+            $id_tmp = 'category_'.bin2hex(random_bytes(2));
+            $v_html = quoted_printable_encode($v);
+
+            $output .= <<<HTML
+              <input type='checkbox'
+                name='$id_tmp' id='$id_tmp'
+                value="$v_html" />
+              <label for='$id_tmp'>$v</label>
+              <br />
+HTML;
+        }
+        return $output;
+    }
+
+    # Print plain array list
+    public function pr_array($array)
+    {
+        echo '<pre>';
+        foreach ($array as $a) {
+            echo "$a<br />";
+        }
+        echo '</pre>';
+    }
 }
