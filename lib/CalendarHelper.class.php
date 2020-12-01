@@ -1,14 +1,18 @@
 <?php
 
+/**
+ * Adapted from
+ * https://gist.github.com/pamelafox-coursera/5359246
+ */
+
 class CalendarEvent
 {
-
     /**
-     *
      * The event ID
      * @var string
      */
     private $uid;
+
 
     /**
      * The event start date
@@ -16,18 +20,20 @@ class CalendarEvent
      */
     private $start;
 
+
     /**
      * The event end date
      * @var DateTime
      */
     private $end;
 
+
     /**
-     *
      * The event title
      * @var string
      */
     private $summary;
+
 
     /**
      * The event description
@@ -35,24 +41,40 @@ class CalendarEvent
      */
     private $description;
 
+
     /**
      * The event location
      * @var string
      */
     private $location;
 
+
+    /**
+     * The event contact
+     * @var string
+     */
+    private $contact;
+
+
+    /**
+     * new CalendarEvent()
+     */
     public function __construct($parameters)
     {
         $parameters += array(
           'summary' => 'Untitled Event',
           'description' => '',
-          'location' => ''
+          'location' => '',
+          'organizer' => '',
         );
+
         if (isset($parameters['uid'])) {
             $this->uid = $parameters['uid'];
         } else {
-            $this->uid = uniqid(rand(0, getmypid()));
+            $this->uid = uniqid('', true);
+            #$this->uid = uniqid(rand(0, getmypid()));
         }
+
         $this->start = $parameters['start'];
         $this->end = $parameters['end'];
         $this->summary = $parameters['summary'];
@@ -60,28 +82,41 @@ class CalendarEvent
         $this->location = $parameters['location'];
 
         # Custom fields
-        $this->url = $parameters['organizer'];
+        $this->contact = $parameters['organizer'];
         $this->url = $parameters['url'];
+
         return $this;
     }
 
+
     /**
-     * Get the start time set for the even
+     * formatDate()
+     *
+     * Get the start time set for the event
      * @return string
      */
     private function formatDate($date)
     {
-        return $date->format("Ymd\THis\Z");
+        return date("Ymd\THis\Z");
+        #return $date->format("Ymd\THis\Z");
     }
 
-    /* Escape commas, semi-colons, backslashes.
-       http://stackoverflow.com/questions/1590368/should-a-colon-character-be-escaped-in-text-values-in-icalendar-rfc2445
+
+    /**
+     * formatValue()
+     *
+     * Escape commas, semi-colons, backslashes
+     * @see https://stackoverflow.com/q/1590368
      */
     private function formatValue($str)
     {
         return addcslashes($str, ",\\;");
     }
 
+
+    /**
+     * generateString()
+     */
     public function generateString()
     {
         $created = new DateTime();
@@ -111,12 +146,13 @@ class CalendarEvent
 }
 
 
+/**
+ * Calendar class
+ */
 class Calendar
 {
     protected $events;
-
     protected $title;
-
     protected $author;
 
     public function __construct($parameters)
@@ -126,21 +162,22 @@ class Calendar
           'title' => 'Calendar',
           'author' => 'Calender Generator'
         );
+
         $this->events = $parameters['events'];
         $this->title  = $parameters['title'];
         $this->author = $parameters['author'];
     }
 
+
     /**
-     *
-     * Call this function to download the invite.
+     * Call this function to download the invite
      */
     public function generateDownload()
     {
         $generated = $this->generateString();
-        header('Expires: Sat, 26 Jul 1997 05:00:00 GMT'); //date in the past
-        header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); //tell it we just updated
-        header('Cache-Control: no-store, no-cache, must-revalidate'); //force revaidation
+        header('Expires: Sat, 26 Jul 1997 05:00:00 GMT'); // date in the past
+        header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // tell it we just updated
+        header('Cache-Control: no-store, no-cache, must-revalidate'); // force revaidation
         header('Cache-Control: post-check=0, pre-check=0', false);
         header('Pragma: no-cache');
         header('Content-type: text/calendar; charset=utf-8');
@@ -151,7 +188,9 @@ class Calendar
         print $generated;
     }
 
+
     /**
+     * generateString()
      *
      * The function generates the actual content of the ICS
      * file and returns it.
@@ -169,6 +208,7 @@ class Calendar
         foreach ($this->events as $event) {
             $content .= $event->generateString();
         }
+        
         $content .= "END:VCALENDAR";
         return $content;
     }

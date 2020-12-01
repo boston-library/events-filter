@@ -1,8 +1,9 @@
 <?php
 
-# Force local timezone
+# Force timezone and charset
 date_default_timezone_set('EST');
 ini_set('default_charset', 'UTF-8');
+
 
 /**
  * Libraries
@@ -27,6 +28,7 @@ require_once 'lib/CalendarHelper.class.php';
 require_once 'lib/zapcallib.php';
 $ics = new ZCiCal();
 */
+
 
 /**
  * Parse RSS
@@ -122,7 +124,7 @@ function set_categories($req)
  *  - get_categories() returns $out with all matching checkboxes,
  *    or all events if nothing is checked
  *  - filter_date() returns $out within the $req date period
- * - filter_options() returns $out if certain boolean conditions match
+ *  - filter_options() returns $out if certain boolean conditions match
  *
  * todo: Split into 3 clear mini-functions
  * todo: Move to the Parse class
@@ -306,14 +308,14 @@ function filter_options($req, $rss)
  *   ]
  * }
  */
-
-
 function rss2ics($matches)
 {
     $json = array_map('json_encode', $matches);
+    $output = [];
 
     foreach ($matches as $match) {
         $ns = $match->children('bc', true);
+        var_dump($ns->{'contact'});
 
         $parameters = [
             'start' => strval($ns->{'start_date'}),
@@ -322,17 +324,17 @@ function rss2ics($matches)
             'description' => strval($match->description),
             'location' => '',
             'url' => strval($match->link),
+            'organizer' => strval($ns->{'contact'}),
         ];
-        var_dump($parameters);
 
         $event = new CalendarEvent($parameters);
-        var_dump($event);
-
-        #$event->addNode(new ZCiCalDataNode("DTSTART:" . $ns->{'start_date'}));
-        #$event->addNode(new ZCiCalDataNode("DTEND:" . $ns->{'end_date'}));
+        array_push($output, $event);
+        #var_dump($event);
     }
+
+    $return = new Calendar(['events' => $output]);
     #var_dump($event->export());
-    #return $event->export();
+    return $return->generateString();
 }
 
 
