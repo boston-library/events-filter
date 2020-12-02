@@ -8,16 +8,32 @@ require_once 'autoload.php';
 # https://github.com/dg/rss-php
 Feed::$cacheDir = 'tmp';
 Feed::$cacheExpire = '+1 hour';
+
 $URI = 'https://bpl.bibliocommons.com/events/rss/all';
 $Feed = Feed::loadRss($URI);
 
-# These functions handle objects
+# The requested event properties
 $Parse = new Parse();
-$req = $Parse->arrayObject($_GET);
-$req = $Parse->getDates($req);
-$req = $Parse->getCategories($req);
+$Request = $Parse->arrayObject($_GET);
+$Request = $Parse->extractCategories($Request);
+$Request = $Parse->extractDates($Request);
 
-# These handle arrays
+echo '<pre>';
+echo "\$Request contents\n\n";
+var_dump($Request);
+echo '</pre>';
+
+
+# The filtered feed
+$Matches = new StdClass();
+$Matches = $Parse->filterCategories($Request, $Feed, $Matches);
+$Matches = $Parse->filterDates($Request, $Feed, $Matches);
+$Matches = $Parse->filterOptions($Request, $Feed, $Matches);
+
+echo '<pre>';
+echo "\$Matches contents\n\n";
+var_dump($Matches);
+echo '</pre>';
 
 # CONTINUE HERE
 
@@ -53,7 +69,7 @@ $req = $Parse->getCategories($req);
 function rss2ics($matches = [], $method = '')
 {
     $json = array_map('json_encode', $matches);
-    $output = [];
+    $Matchesput = [];
 
     foreach ($matches as $match) {
         $ns = $match->children('bc', true);
@@ -78,16 +94,16 @@ function rss2ics($matches = [], $method = '')
             'summary' => strval($match->title),
             'description' => strval($match->description),
             # todo: Fix the location property
-            #'location' => ($req->is_virtual) ? 'Online' : 'NEED TO FIND LOCATION',
+            #'location' => ($Request->is_virtual) ? 'Online' : (array_intersect()),
             'url' => strval($match->link),
             'organizer' => strval($organizer),
         ];
 
         $event = new CalendarEvent($parameters);
-        array_push($output, $event);
+        array_push($Matchesput, $event);
     }
 
-    $r = new Calendar(['events' => $output]);
+    $r = new Calendar(['events' => $Matchesput]);
     switch ($method) {
         case 'download':
             return $r->generateDownload();
@@ -110,25 +126,21 @@ function rss2ics($matches = [], $method = '')
 
     return false;
 }
-
-
-/**
- * Debug
- */
-
-echo '<pre>';
-#$matches = filter_options($req, $Feed);
-#var_dump($matches);
-#var_dump(rss2ics($matches, 'download'));
-echo '</pre>';
-
-if (isset($_GET['download'])) {
-    rss2ics($matches, 'download');
-}
-
 ?>
 
+<!doctype html>
+<html lang='en'>
 
-<a
-    href="filter.php?<?= $_SERVER['QUERY_STRING'] ?>?download">Download
-    ICS</a>
+<head>
+    <title>Export Events | Boston Public Library</title>
+    <meta charset='utf-8'>
+</head>
+
+<body>
+
+DOWNLOAD LINK HERE<br />
+TABLE HERE
+
+</body>
+
+</html>

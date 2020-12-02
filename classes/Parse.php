@@ -53,17 +53,17 @@ class Parse
     }
 
     /**
-     * getDates()
+     * extractDates()
      *
      * Set the start and end dates.
      *
-     * @param object $req The GET request
-     * @return object $req The modified object
+     * @param object $Request The GET request
+     * @return object $Request The modified object
      */
-    public function getDates($req)
+    public function extractDates($Request)
     {
         # Prevent warnings
-        $req->date_radio = (isset($req->date_radio)) ? $req->date_radio : false;
+        $Request->date_radio = (isset($Request->date_radio)) ? $Request->date_radio : false;
 
         # Common useful dates
         $f = 'c';
@@ -76,68 +76,71 @@ class Parse
 
         # Radio button options
         # Only applied absent date entry
-        if (!empty($req->start_date) || !empty($req->end_date)) {
+        if (!empty($Request->start_date) || !empty($Request->end_date)) {
             # Partial manual date fallback
-            $req->start_date = ($req->start_date) ?: $today;
-            $req->end_date = ($req->end_date) ?: $next_year;
+            $Request->start_date = ($Request->start_date) ?: $today;
+            $Request->end_date = ($Request->end_date) ?: $next_year;
         } else {
-            switch ($req->date_radio) {
+            switch ($Request->date_radio) {
             case 'today':
-                $req->start_date = $today;
-                $req->end_date = $today;
+                $Request->start_date = $today;
+                $Request->end_date = $today;
                 break;
 
             case 'tomorrow':
-                $req->start_date = $tomorrow;
-                $req->end_date = $tomorrow;
+                $Request->start_date = $tomorrow;
+                $Request->end_date = $tomorrow;
                 break;
 
             case 'this_weekend':
-                $req->start_date = $this_saturday;
-                $req->end_date = $this_sunday;
+                $Request->start_date = $this_saturday;
+                $Request->end_date = $this_sunday;
                 break;
 
             case 'next_week':
-                $req->start_date = $today;
-                $req->end_date = $next_week;
+                $Request->start_date = $today;
+                $Request->end_date = $next_week;
                 break;
 
             default:
-                $req->start_date = $today;
-                $req->end_date = $next_year;
+                $Request->start_date = $today;
+                $Request->end_date = $next_year;
                 break;
             }
         }
 
-        unset($req->date_radio);
-        return (object) $req;
+        unset($Request->date_radio);
+        return $Request;
     }
 
     /**
-     * matchDates()
+     * filterDates()
      */
-    public function matchDates($req, $Feed)
+    public function filterDates($Request, $Feed, &$Matches)
     {
-        # IO arrays
-        $in = $this->matchCategories($req, $Feed);
-        $out = [];
+        # $Request dates
+        $StartDate = strtotime($Request->start_date);
+        $EndDate = strtotime($Request->end_date);
 
-        # $req dates
-        $start_date = strtotime($req->start_date);
-        $end_date = strtotime($req->end_date);
-
-        # Add matches to $out
-        foreach ($in as $match) {
+        # Add matches to $Matches
+        foreach ($Matches as $k => $Event) {
+            #foreach ($Feed->item as $k => $Event) {
             # Define namespace
-            $ns = $match->children('bc', true);
-            $event_date = strtotime($ns->{'start_date'});
+            $ns = $Event->children('bc', true);
+            $EventDate = strtotime($ns->{'start_date'});
 
-            if (betweenDates($event_date, $start_date, $end_date)) {
-                array_push($out, $match);
+            if (!$this->betweenDates($EventDate, $StartDate, $EndDate)) {
+                unset($Matches->$k);
             }
+
+            /*
+            if ($this->betweenDates($EventDate, $StartDate, $EndDate)) {
+                array_push($Matches, $Event);
+            }
+            */
         }
 
-        return (array) $out;
+        return $Matches;
     }
 
 
@@ -146,68 +149,74 @@ class Parse
      */
 
     /**
-     * getCategories()
+     * extractCategories()
      *
      * Set the categories (all form checkboxes).
-     * Strips the bin2hex() suffixes and adds $req->category.
+     * Strips the bin2hex() suffixes and adds $Request->category.
      *
      * @param object
      * @return object
      */
-    public function getCategories($req)
+    public function extractCategories($Request)
     {
-        $req->category = [];
+        $Request->category = [];
         $regex = '/^category_.{4}$/';
 
-        foreach ($req as $k => $v) {
+        foreach ($Request as $k => $v) {
             if (preg_match($regex, $k)) {
                 $v_utf8 = quoted_printable_decode($v);
-                array_push($req->category, $v_utf8);
-                unset($req->$k);
+                array_push($Request->category, $v_utf8);
+                unset($Request->$k);
             }
         }
 
-        return (object) $req;
+        return $Request;
     }
 
     /**
      * Find matches
      *
-     * Note the new object instead of $req
+     * Note the new object instead of $Request
      *
      * The current order is:
-     *  - get_categories() returns $out with all matching checkboxes,
+     *  - get_categories() returns $Matches with all matching checkboxes,
      *    or all events if nothing is checked
-     *  - filter_date() returns $out within the $req date period
-     *  - filter_options() returns $out if certain boolean conditions match
+     *  - filter_date() returns $Matches within the $Request date period
+     *  - filter_options() returns $Matches if certain boolean conditions match
      *
      * todo: Split into 3 clear mini-functions
      * todo: Move to the Parse class
      */
-    public function matchCategories($req, $Feed)
+    public function filterCategories($Request, $Feed, &$Matches)
     {
-        return (!$req->category) ?? false;
+        /*
+        if (!$Request->category) {
+            trigger_error(
+                'Please run $this->extractCategories() to strip bin2hex() noise.',
+                E_USER_ERROR
+            );
+        }
+        */
 
-        # Output array
-        $out = [];
+        $Matches = $this->arrayObject($Matches);
 
-        if (empty($req->category)) {
+        if (empty($Request->category)) {
             # Add all possible matches
-            foreach ($Feed->item as $event) {
-                array_push($out, $event);
+            foreach ($Feed->item as $Event) {
+                array_push($Matches, $Event);
             }
         } else {
             # Add checked categories only
-            foreach ($req->category as $filter) {
-                foreach ($Feed->item as $event) {
-                    if (in_array($filter, get_object_vars($event->category))) {
-                        array_push($out, $event);
+            foreach ($Request->category as $Filter) {
+                foreach ($Feed->item as $Event) {
+                    if (in_array($Filter, get_object_vars($Event->category))) {
+                        array_push($Matches, $Event);
                     }
                 }
             }
         }
 
-        return (array) $out;
+        return (object) ($Matches);
     }
 
 
@@ -228,22 +237,20 @@ class Parse
      *
      * todo: Clarify get_categories() relationship
      */
-    public function matchOptions($req, $Feed)
+    public function filterOptions($Request, $Feed, &$Matches)
     {
-        # IO arrays
-        $in = filter_date($req, $Feed);
-        $out = [];
+        #$Matches = $this->arrayObject($Matches);
 
         # Prevent warnings
-        $req->is_virtual = (isset($req->is_virtual)) ?: false;
-        $req->is_featured = (isset($req->is_featured)) ?: false;
-        $req->is_cancelled = (isset($req->is_cancelled)) ?: false;
+        $Request->is_virtual = (isset($Request->is_virtual)) ?: false;
+        $Request->is_featured = (isset($Request->is_featured)) ?: false;
+        $Request->is_cancelled = (isset($Request->is_cancelled)) ?: false;
 
-        # Add matches to $out
-        if (!empty($in)) {
-            foreach ($in as $k => $match) {
+        # Add matches to $Matches
+        if (!empty($Matches)) {
+            foreach ($Matches as $k => $Match) {
                 # Define namespace
-                $ns = $match->children('bc', true);
+                $ns = $Match->children('bc', true);
 
                 # Boolean variables
                 # todo: Don't rely on loose equality
@@ -254,30 +261,36 @@ class Parse
                 $is_cancelled = ($ns->{'is_cancelled'} == 'true') ? true : false;
 
                 # Virtual and featured
-                if ($req->is_virtual && $req->is_featured === true) {
-                    if ($is_virtual && ($is_featured || $is_featured_at_location) === true) {
-                        array_push($out, $match);
+                # todo: Test for virtual featured
+                if ($Request->is_virtual === true
+                && $Request->is_featured === true) {
+                    if ($is_virtual !== true
+                    || ($is_featured || $is_featured_at_location) !== true) {
+                        unset($Matches->$k);
                     }
                 } else {
                     # Virtual only
-                    if ($req->is_virtual && $is_virtual === true) {
-                        array_push($out, $match);
+                    if ($Request->is_virtual === true
+                    && $is_virtual !== true) {
+                        unset($Matches->$k);
                     }
 
                     # Featured only
-                    if (($req->is_featured && ($is_featured || $is_featured_at_location) === true)) {
-                        array_push($out, $match);
+                    if (($Request->is_featured === true
+                    && ($is_featured || $is_featured_at_location) !== true)) {
+                        unset($Matches->$k);
                     }
                 }
 
                 # Hide cancelled unless checked
-                if ($req->is_cancelled === false && $is_cancelled === true) {
-                    array_pop($out);
+                # Note reversed logic here
+                if ($Request->is_cancelled !== true
+                && $is_cancelled === true) {
+                    unset($Matches->$k);
                 }
             }
         }
 
-        return (array) $out;
-        #return (object) $out;
+        return $Matches;
     }
 }
