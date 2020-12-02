@@ -3,6 +3,8 @@
 /**
  * Adapted from
  * https://gist.github.com/pamelafox-coursera/5359246
+ * 
+ * @see https://en.wikipedia.org/wiki/ICalendar
  */
 
 class CalendarEvent
@@ -13,13 +15,11 @@ class CalendarEvent
      */
     private $uid;
 
-
     /**
      * The event start date
      * @var DateTime
      */
     private $start;
-
 
     /**
      * The event end date
@@ -27,13 +27,11 @@ class CalendarEvent
      */
     private $end;
 
-
     /**
      * The event title
      * @var string
      */
     private $summary;
-
 
     /**
      * The event description
@@ -41,19 +39,41 @@ class CalendarEvent
      */
     private $description;
 
-
     /**
      * The event location
      * @var string
      */
     private $location;
 
-
     /**
      * The event contact
      * @var string
      */
     private $contact;
+
+
+    /**
+     * formatDate()
+     *
+     * Get the start time set for the event
+     * @return string
+     */
+    private function formatDate($date)
+    {
+        return date("Ymd\THis\Z");
+        #return $date->format("Ymd\THis\Z");
+    }
+
+    /**
+     * formatValue()
+     *
+     * Escape commas, semi-colons, backslashes
+     * @see https://stackoverflow.com/q/1590368
+     */
+    private function formatValue($str)
+    {
+        return addcslashes($str, ",\\;");
+    }
 
 
     /**
@@ -67,6 +87,7 @@ class CalendarEvent
           'location' => '',
           'organizer' => '',
           'geo' => '',
+          'categories' => '',
         );
 
         if (isset($parameters['uid'])) {
@@ -83,38 +104,13 @@ class CalendarEvent
         $this->location = $parameters['location'];
 
         # Custom fields
-        $this->contact = $parameters['organizer'];
+        $this->contact = $parameters['contact'];
         $this->url = $parameters['url'];
         $this->geo = $parameters['geo'];
+        $this->categories = $parameters['categories'];
 
         return $this;
     }
-
-
-    /**
-     * formatDate()
-     *
-     * Get the start time set for the event
-     * @return string
-     */
-    private function formatDate($date)
-    {
-        return date("Ymd\THis\Z");
-        #return $date->format("Ymd\THis\Z");
-    }
-
-
-    /**
-     * formatValue()
-     *
-     * Escape commas, semi-colons, backslashes
-     * @see https://stackoverflow.com/q/1590368
-     */
-    private function formatValue($str)
-    {
-        return addcslashes($str, ",\\;");
-    }
-
 
     /**
      * generateString()
@@ -138,6 +134,7 @@ class CalendarEvent
                  . "URL:{$this->url}\n"
                  . "ORGANIZER:{$this->contact}\n"
                  . "GEO:{$this->geo}\n"
+                 . "CATEGORIES:{$this->categories}\n"
 
                  . "SUMMARY:{$this->formatValue($this->summary)}\n"
                  . "SEQUENCE:0\n"

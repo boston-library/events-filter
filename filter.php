@@ -18,10 +18,12 @@ $Request = $Parse->arrayObject($_GET);
 $Request = $Parse->extractCategories($Request);
 $Request = $Parse->extractDates($Request);
 
+/*
 echo '<pre>';
 echo "\$Request contents\n\n";
 var_dump($Request);
 echo '</pre>';
+*/
 
 # The filtered feed
 $Matches = new stdClass();
@@ -29,12 +31,12 @@ $Matches = $Parse->filterCategories($Request, $Feed, $Matches);
 $Matches = $Parse->filterDates($Request, $Feed, $Matches);
 $Matches = $Parse->filterOptions($Request, $Feed, $Matches);
 
+/*
 echo '<pre>';
 echo "\$Matches contents\n\n";
 var_dump($Matches);
 echo '</pre>';
-
-# CONTINUE HERE
+*/
 
 /**
  * Output HTML, iCal, and CSV
@@ -65,7 +67,7 @@ echo '</pre>';
  *   ]
  * }
  */
-function rss2ics(&$Matches, $Method = '')
+function rss2ics($Matches)
 {
     $Metadata = new Metadata();
     $Parse = new Parse();
@@ -75,10 +77,15 @@ function rss2ics(&$Matches, $Method = '')
         $ns = $Match->children('bc', true);
 
         /**
+         * $Organizer
+         *
          * If no callback is supplied,
          * all empty entries of array will be removed
          * @see https://www.php.net/manual/en/function.array-filter.php
          */
+        $Organizer = 'MAILTO:'.$ns->{'contact'}->{'email'};
+
+        /*
         $Organizer = implode(
             "\n",
             array_filter([
@@ -87,29 +94,48 @@ function rss2ics(&$Matches, $Method = '')
                 $ns->{'contact'}->{'email'},
             ])
         );
+        */
 
-        /**
-         * If no callback is supplied,
-         * all empty entries of array will be removed
-         * @see https://www.php.net/manual/en/function.array-filter.php
-         */
-        $Location = implode(
-            "\n",
-            array_filter([
-                $ns->{'location'}->{'name'},
-                $ns->{'location'}->{'number'}.' '.$ns->{'location'}->{'street'},
-                $ns->{'location'}->{'city'}.', '.$ns->{'location'}->{'state'}.' '.$ns->{'location'}->{'zip'},
-            ])
-        );
+        # $Location
+        $Location =
+        (trim(
+            $L = implode(
+                ', ',
+                array_filter([
+                    $ns->{'location'}->{'name'},
+                    $ns->{'location'}->{'number'}.' '.$ns->{'location'}->{'street'},
+                    $ns->{'location'}->{'city'}.', '.$ns->{'location'}->{'state'}.' '.$ns->{'location'}->{'zip'},
+                ])
+            )
+        # Failed implode implies online event
+        # todo: Find a less fragile condition to test
+        ) !== ', ,')
+        ? $L
+        : 'Online Event';
 
+        # $Coordinates
+        # Already empty if nonexistent
         $Coordinates = implode(
-            ';',
+            ";",
             array_filter([
                 $ns->{'location'}->{'latitude'},
                 $ns->{'location'}->{'longitude'},
             ])
         );
 
+        # $Categories
+        $Categories = [];
+        foreach (get_object_vars($Match->category) as $Category) {
+            array_push($Categories, $Category);
+        }
+        
+        array_shift($Categories);
+        $CatString = implode(
+            ', ',
+            $Categories
+        );
+
+        # Set the params for CalendarEvent
         $Parameters = [
             'start' => strval($Match->start_date),
             'end' => strval($Match->end_date),
@@ -117,10 +143,9 @@ function rss2ics(&$Matches, $Method = '')
             'description' => strval($Match->description),
             'location' => strval($Location),
             'url' => strval($Match->link),
-            'organizer' => strval($Organizer),
+            'contact' => strval($Organizer),
             'geo' => strval($Coordinates),
-
-
+            'categories' => strval($CatString),
         ];
 
         $Event = new CalendarEvent($Parameters);
@@ -128,32 +153,13 @@ function rss2ics(&$Matches, $Method = '')
     }
 
     $r = new Calendar(['events' => $Output]);
-    switch ($Method) {
-        case 'download':
-            return $r->generateDownload();
-            break;
+    return $r->generateString();
 
-        case 'ical':
-            return $r->generateString();
-            break;
-
-        case 'html':
-            break;
-
-        default:
-            throw new InvalidArgumentException(
-                '$Method must be one of download, ical, or html'
-            );
-            break;
-
-    }
-
-    return false;
 }
 echo '<pre>';
-var_dump(rss2ics($Matches, 'ical'));
+var_dump(rss2ics($Matches));
+echo '</pre>';
 ?>
-
 <!doctype html>
 <html lang='en'>
 
