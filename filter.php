@@ -24,7 +24,7 @@ var_dump($Request);
 echo '</pre>';
 
 # The filtered feed
-$Matches = new StdClass();
+$Matches = new stdClass();
 $Matches = $Parse->filterCategories($Request, $Feed, $Matches);
 $Matches = $Parse->filterDates($Request, $Feed, $Matches);
 $Matches = $Parse->filterOptions($Request, $Feed, $Matches);
@@ -65,20 +65,21 @@ echo '</pre>';
  *   ]
  * }
  */
-function rss2ics($matches = [], $method = '')
+function rss2ics(&$Matches, $Method = '')
 {
-    $json = array_map('json_encode', $matches);
-    $Matchesput = [];
+    $Metadata = new Metadata();
+    $Parse = new Parse();
+    $Output = [];
 
-    foreach ($matches as $match) {
-        $ns = $match->children('bc', true);
+    foreach ($Matches as $Match) {
+        $ns = $Match->children('bc', true);
 
         /**
          * If no callback is supplied,
          * all empty entries of array will be removed
          * @see https://www.php.net/manual/en/function.array-filter.php
          */
-        $organizer = implode(
+        $Organizer = implode(
             "\n",
             array_filter([
                 $ns->{'contact'}->{'name'},
@@ -87,23 +88,38 @@ function rss2ics($matches = [], $method = '')
             ])
         );
 
-        $parameters = [
-            'start' => strval($ns->{'start_date'}),
-            'end' => strval($ns->{'end_date'}),
-            'summary' => strval($match->title),
-            'description' => strval($match->description),
-            # todo: Fix the location property
-            #'location' => ($Request->is_virtual) ? 'Online' : INTERSECT $Request->category AND $Metadata->Locations),
-            'url' => strval($match->link),
-            'organizer' => strval($organizer),
+        /**
+         * If no callback is supplied,
+         * all empty entries of array will be removed
+         * @see https://www.php.net/manual/en/function.array-filter.php
+         */
+        $Location = implode(
+            "\n",
+            array_filter([
+                $ns->{'location'}->{'name'},
+                $ns->{'location'}->{'number'}.' '.$ns->{'location'}->{'street'},
+                $ns->{'location'}->{'city'}.', '.$ns->{'location'}->{'state'}.' '.$ns->{'location'}->{'zip'},
+                $ns->{'location'}->{'latitude'},
+                $ns->{'location'}->{'longitude'},
+            ])
+        );
+
+        $Parameters = [
+            'start' => strval($Match->start_date),
+            'end' => strval($Match->end_date),
+            'summary' => strval($Match->title),
+            'description' => strval($Match->description),
+            'location' => strval($Location),
+            'url' => strval($Match->link),
+            'organizer' => strval($Organizer),
         ];
 
-        $event = new CalendarEvent($parameters);
-        array_push($Matchesput, $event);
+        $Event = new CalendarEvent($Parameters);
+        array_push($Output, $Event);
     }
 
-    $r = new Calendar(['events' => $Matchesput]);
-    switch ($method) {
+    $r = new Calendar(['events' => $Output]);
+    switch ($Method) {
         case 'download':
             return $r->generateDownload();
             break;
@@ -117,7 +133,7 @@ function rss2ics($matches = [], $method = '')
 
         default:
             throw new InvalidArgumentException(
-                '$method must be one of download, ical, or html'
+                '$Method must be one of download, ical, or html'
             );
             break;
 
@@ -125,6 +141,8 @@ function rss2ics($matches = [], $method = '')
 
     return false;
 }
+echo '<pre>';
+var_dump(rss2ics($Matches, 'ical'));
 ?>
 
 <!doctype html>
