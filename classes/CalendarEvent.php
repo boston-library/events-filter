@@ -66,6 +66,7 @@ class CalendarEvent
           'description' => '',
           'location' => '',
           'organizer' => '',
+          'geo' => '',
         );
 
         if (isset($parameters['uid'])) {
@@ -84,6 +85,7 @@ class CalendarEvent
         # Custom fields
         $this->contact = $parameters['organizer'];
         $this->url = $parameters['url'];
+        $this->geo = $parameters['geo'];
 
         return $this;
     }
@@ -135,6 +137,7 @@ class CalendarEvent
                  # Custom fields
                  . "URL:{$this->url}\n"
                  . "ORGANIZER:{$this->contact}\n"
+                 . "GEO:{$this->geo}\n"
 
                  . "SUMMARY:{$this->formatValue($this->summary)}\n"
                  . "SEQUENCE:0\n"

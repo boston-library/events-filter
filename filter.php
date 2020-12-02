@@ -99,6 +99,12 @@ function rss2ics(&$Matches, $Method = '')
                 $ns->{'location'}->{'name'},
                 $ns->{'location'}->{'number'}.' '.$ns->{'location'}->{'street'},
                 $ns->{'location'}->{'city'}.', '.$ns->{'location'}->{'state'}.' '.$ns->{'location'}->{'zip'},
+            ])
+        );
+
+        $Coordinates = implode(
+            ';',
+            array_filter([
                 $ns->{'location'}->{'latitude'},
                 $ns->{'location'}->{'longitude'},
             ])
@@ -112,6 +118,9 @@ function rss2ics(&$Matches, $Method = '')
             'location' => strval($Location),
             'url' => strval($Match->link),
             'organizer' => strval($Organizer),
+            'geo' => strval($Coordinates),
+
+
         ];
 
         $Event = new CalendarEvent($Parameters);
