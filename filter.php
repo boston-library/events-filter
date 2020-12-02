@@ -23,7 +23,6 @@ echo "\$Request contents\n\n";
 var_dump($Request);
 echo '</pre>';
 
-
 # The filtered feed
 $Matches = new StdClass();
 $Matches = $Parse->filterCategories($Request, $Feed, $Matches);
@@ -94,7 +93,7 @@ function rss2ics($matches = [], $method = '')
             'summary' => strval($match->title),
             'description' => strval($match->description),
             # todo: Fix the location property
-            #'location' => ($Request->is_virtual) ? 'Online' : (array_intersect()),
+            #'location' => ($Request->is_virtual) ? 'Online' : INTERSECT $Request->category AND $Metadata->Locations),
             'url' => strval($match->link),
             'organizer' => strval($organizer),
         ];
