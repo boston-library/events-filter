@@ -74,6 +74,7 @@ echo '</pre>';
 
 <body>
 
+
     <p>
         <a href="filter.php?download&<?=$_SERVER['QUERY_STRING']?>"
             target="_blank">Download ICS</a>
@@ -82,6 +83,7 @@ echo '</pre>';
     </p>
 
     <?=$Output->rss2ics($Matches, $Download = false, $HTML = true)?>
+
 
 </body>
 
