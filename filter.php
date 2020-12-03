@@ -77,9 +77,12 @@ echo '</pre>';
     <p>
         <a href="filter.php?download&<?=$_SERVER['QUERY_STRING']?>"
             target="_blank">Download ICS</a>
+        &ensp; | &ensp;
+        <a href="/" target="_blank">New Search</a>
     </p>
 
-    <?=$Output->htmlTable($Matches)?>
+    <?=$Output->rss2ics($Matches, $Download = false, $HTML = true)?>
+
 </body>
 
 </html>

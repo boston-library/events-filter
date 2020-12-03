@@ -7,6 +7,7 @@ class Parse
      *
      * Recursively makes an array into an object,
      * and vice versa, depending on the input type.
+     * Quick tests before wasting time on json_*code().
      */
     public function arrayObject($x = false)
     {
@@ -24,7 +25,7 @@ class Parse
     }
 
     /*
-    # todo: Make this work
+    # todo: Make this work if deemed necessary
     public function search_namespace($needle, $haystack)
     {
         return (!is_object($haystack))
@@ -124,7 +125,7 @@ class Parse
 
         # Add matches to $Matches
         foreach ($Matches as $k => $Event) {
-            #foreach ($Feed->item as $k => $Event) {
+        #foreach ($Feed->item as $k => $Event) {
             # Define namespace
             $ns = $Event->children('bc', true);
             $EventDate = strtotime($ns->{'start_date'});
@@ -216,7 +217,7 @@ class Parse
             }
         }
 
-        return (object) ($Matches);
+        return (object) $Matches;
     }
 
 

@@ -8,12 +8,26 @@ class Output
 {
     /**
      * rss2ics()
+     * todo: rename
      */
-    public function rss2ics($Matches, $Download = false)
+    public function rss2ics($Matches = null, $Download = false, $HTML = false)
     {
+        # Quickly
+        if (!$Matches || empty($Matches)) {
+            return trigger_error(
+                '$Matches must exist',
+                E_USER_ERROR
+            );
+        }
+
+        # Autoload
         $Metadata = new Metadata();
         $Parse = new Parse();
-        $Output = [];
+
+        # Since we're already transforming the Feed objects for CalendarEvent,
+        # we might as well prepare an array for htmlTable() as the same time
+        $OutputICS = [];
+        $OutputHTML = [];
 
         foreach ($Matches as $Match) {
             $ns = $Match->children('bc', true);
@@ -78,9 +92,10 @@ class Output
             );
 
             # Set the params for CalendarEvent
-            $Parameters = [
-                'start' => strval($Match->start_date),
-                'end' => strval($Match->end_date),
+            # todo: Dates are now on Thunderbird import
+            $ParametersICS = [
+                'start' => strval($ns->start_date),
+                'end' => strval($ns->end_date),
                 'summary' => strval($Match->title),
                 'description' => strval($Match->description),
                 'location' => strval($Location),
@@ -90,14 +105,43 @@ class Output
                 'categories' => strval($CatString),
             ];
 
-            $Event = new CalendarEvent($Parameters);
-            array_push($Output, $Event);
+            $Event = new CalendarEvent($ParametersICS);
+            array_push($OutputICS, $Event);
+
+            # Set the params for htmlTable()
+            # todo: Update after seeing what format Lisa wants
+            $ParametersHTML = [
+                'start' => strval($ns->start_date),
+                'end' => strval($ns->end_date),
+                'title' => strval($Match->title),
+                'description' => strval($Match->description),
+                'location' => strval($Location),
+                'url' => strval($Match->link),
+                'contact' => strval($Organizer),
+                'categories' => strval($CatString),
+            ];
+            
+            array_push($OutputHTML, $ParametersHTML);
         }
 
-        $R = new Calendar(['events' => $Output]);
+        /**
+         * Compact ternary return switch workings:
+         *   if $HTML, $this->htmlTable()
+         *   elseif $Download, Calendar->generateDownload()
+         *   else Calendar->generateString()
+         */
+        $R = new Calendar(['events' => $OutputICS]);
+        return ($HTML === true)
+            ? $this->htmlTable($OutputHTML)
+            : (($Download === true)
+                ? $R->generateDownload()
+                : $R->generateString());
+        
+        /*
         return ($Download === true)
             ? $R->generateDownload()
             : $R->generateString();
+        */
     }
 
     /**
@@ -112,22 +156,29 @@ class Output
             <th>Start Date</th>
             <th>End Date</th>
             <th>Location</th>
-            <th>Category</th>
+            <th>Categories</th>
             <th>Organizer</th>
           </tr>
 HTML;
 
         foreach ($Matches as $Match) {
-            $ns = $Match->children('bc', true);
+            # Get raw email for display below
+            $Contact = preg_replace(
+                '/^MAILTO\:/i',
+                '',
+                $Match['contact']
+            );
 
             $HTML .= <<<HTML
             <tr>
-              <td>$Match->title</td>
-              <td>$ns->start_date</td>
-              <td>$ns->end_date</td>
-              <td>$ns->location</td>
-              <td>$Match->category</td>
-              <td>$Match->Organizer</td>
+              <td>{$Match['title']}</td>
+              <td>{$Match['start']}</td>
+              <td>{$Match['end']}</td>
+              <td>{$Match['location']}</td>
+              <td>{$Match['categories']}</td>
+              <td>
+                <a href="mailto:$Contact">$Contact</a>
+              </td>
             </tr>
 HTML;
         }
