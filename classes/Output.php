@@ -111,8 +111,15 @@ class Output
             # Set the params for htmlTable()
             # todo: Update after seeing what format Lisa wants
             $ParametersHTML = [
-                'start' => strval($ns->start_date),
-                'end' => strval($ns->end_date),
+                'start' => strftime(
+                    '%c',
+                    strtotime($ns->start_date)
+                ),
+                'end' => strftime(
+                    '%c',
+                    strtotime($ns->end_date)
+                ),
+
                 'title' => strval($Match->title),
                 'description' => strval($Match->description),
                 'location' => strval($Location),
@@ -162,6 +169,9 @@ class Output
 HTML;
 
         foreach ($Matches as $Match) {
+            # Format event title as link to event
+            $Link = '<a href="'.$Match['url'].'" target="_blank">'.$Match['title'].'</a>';
+
             # Get raw email for display below
             $Contact = preg_replace(
                 '/^MAILTO\:/i',
@@ -171,7 +181,7 @@ HTML;
 
             $HTML .= <<<HTML
             <tr>
-              <td>{$Match['title']}</td>
+              <td>$Link</td>
               <td>{$Match['start']}</td>
               <td>{$Match['end']}</td>
               <td>{$Match['location']}</td>

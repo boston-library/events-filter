@@ -3,7 +3,7 @@
 /**
  * Adapted from
  * https://gist.github.com/pamelafox-coursera/5359246
- * 
+ *
  * @see https://en.wikipedia.org/wiki/ICalendar
  */
 
@@ -56,12 +56,28 @@ class CalendarEvent
      * formatDate()
      *
      * Get the start time set for the event
+     * todo: Make it handle a DateTime or string argument
+     *
      * @return string
      */
     private function formatDate($date)
     {
-        return date("Ymd\THis\Z");
-        #return $date->format("Ymd\THis\Z");
+        # Stopgap
+        return strftime(
+            DATE_ATOM,
+            $date
+        );
+
+        /*
+        if (is_string($date)) {
+            var_dump(
+                date_create_from_format(
+                    DATE_ATOM,
+                    $date
+                )
+            );
+        }
+        */
     }
 
     /**
