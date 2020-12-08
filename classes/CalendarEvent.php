@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * Adapted from
@@ -63,6 +64,7 @@ class CalendarEvent
     private function formatDate($date)
     {
         return strftime('%Y%m%dT%H%M%S', $date);
+
         /*
         if (!$date instanceof DateTime) {
             return date_create_from_format(
@@ -74,6 +76,7 @@ class CalendarEvent
         }
         */
     }
+
 
     /**
      * formatValue()
@@ -124,6 +127,7 @@ class CalendarEvent
         return $this;
     }
 
+    
     /**
      * generateString()
      */

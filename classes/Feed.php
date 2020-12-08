@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * RSS for PHP - small and easy-to-use library for consuming an RSS Feed

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 # Force timezone and charset
 date_default_timezone_set('EST');
