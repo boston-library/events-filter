@@ -83,7 +83,8 @@ class CalendarEvent
      */
     private function formatValue($str)
     {
-        return addcslashes($str, ",\\;");
+        return trim(strip_tags($str));
+        #return addcslashes($str, ",\\;");
     }
 
 
