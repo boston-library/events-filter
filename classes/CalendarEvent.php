@@ -54,31 +54,6 @@ class CalendarEvent
 
 
     /**
-     * formatDate()
-     *
-     * Get the start time set for the event
-     * todo: Make it handle a DateTime or string argument
-     *
-     * @return string
-     */
-    private function formatDate($date)
-    {
-        return strftime('%Y%m%dT%H%M%S', $date);
-
-        /*
-        if (!$date instanceof DateTime) {
-            return date_create_from_format(
-                DATE_ATOM,
-                strtotime($date)
-            );
-        } else {
-            return $date->format(DATE_ATOM);
-        }
-        */
-    }
-
-
-    /**
      * formatValue()
      *
      * Escape commas, semi-colons, backslashes
@@ -86,8 +61,12 @@ class CalendarEvent
      */
     private function formatValue($str)
     {
-        return trim(strip_tags($str));
-        #return addcslashes($str, ",\\;");
+        return trim(
+            addcslashes(
+                strip_tags($str),
+                ",\\;"
+            )
+        );
     }
 
 
@@ -133,10 +112,7 @@ class CalendarEvent
      */
     public function generateString()
     {
-        # Ugly workaround for broken dates
-        $now = $this->formatDate(
-            strtotime('now')
-        );
+        $now = formatDate(strtotime('now'));
         $content = "BEGIN:VEVENT\n"
                  . "UID:{$this->uid}\n"
                  . "DTSTART;TZID=America/New_York:{$this->start}\n"

@@ -96,17 +96,11 @@ class Output
             $ParametersICS = [
                 # https://icalendar.org/iCalendar-RFC-5545/3-3-5-date-time.html
                 'start' => strval(
-                    strftime(
-                        '%Y%m%dT%H%M%S',
-                        strtotime($ns->start_date)
-                    )
+                    formatDate($ns->{'start_date'})
                 ),
 
                 'end' => strval(
-                    strftime(
-                        '%Y%m%dT%H%M%S',
-                        strtotime($ns->end_date)
-                    )
+                    formatDate($ns->{'end_date'})
                 ),
 
                 'summary' => strval($Match->title),
@@ -126,11 +120,15 @@ class Output
             $ParametersHTML = [
                 'start' => strftime(
                     '%c',
-                    strtotime($ns->start_date)
+                    strtotime(
+                        formatDate($ns->{'start_date'})
+                    )
                 ),
                 'end' => strftime(
                     '%c',
-                    strtotime($ns->end_date)
+                    strtotime(
+                        formatDate($ns->{'end_date'})
+                    )
                 ),
 
                 'title' => strval($Match->title),

@@ -6,6 +6,32 @@ date_default_timezone_set('EST');
 ini_set('default_charset', 'UTF-8');
 require_once 'autoload.php';
 
+/**
+ * formatDate()
+ */
+function formatDate($date)
+{
+    $f = '%Y%m%dT%H%M%S';
+
+    if (is_object($date)) {
+        $date = strtotime(
+            implode(
+                '',
+                get_object_vars($date)
+            )
+        );
+    }
+
+    if (is_int($date)) {
+        return strftime($f, $date);
+    } else {
+        return strftime(
+            $f,
+            strtotime($date)
+        );
+    }
+}
+
 # https://github.com/dg/rss-php
 Feed::$cacheDir = 'tmp';
 Feed::$cacheExpire = '+1 hour';

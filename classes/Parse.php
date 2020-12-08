@@ -128,7 +128,12 @@ class Parse
         foreach ($Matches as $k => $Event) {
             # Define namespace
             $ns = $Event->children('bc', true);
-            $EventDate = strtotime($ns->{'start_date'});
+            $EventDate = strtotime(
+                implode(
+                    '',
+                    get_object_vars($ns->{'start_date'})
+                )
+            );
 
             if (!$this->betweenDates($EventDate, $StartDate, $EndDate)) {
                 unset($Matches->$k);
