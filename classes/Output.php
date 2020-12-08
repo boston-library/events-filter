@@ -92,10 +92,22 @@ class Output
             );
 
             # Set the params for CalendarEvent
-            # todo: Dates are now on Thunderbird import
             $ParametersICS = [
-                'start' => strval($ns->start_date),
-                'end' => strval($ns->end_date),
+                # https://icalendar.org/iCalendar-RFC-5545/3-3-5-date-time.html
+                'start' => strval(
+                    strftime(
+                        '%Y%m%dT%H%M%S',
+                        strtotime($ns->start_date)
+                    )
+                ),
+
+                'end' => strval(
+                    strftime(
+                        '%Y%m%dT%H%M%S',
+                        strtotime($ns->end_date)
+                    )
+                ),
+
                 'summary' => strval($Match->title),
                 'description' => strval($Match->description),
                 'location' => strval($Location),
@@ -143,12 +155,6 @@ class Output
             : (($Download === true)
                 ? $R->generateDownload()
                 : $R->generateString());
-        
-        /*
-        return ($Download === true)
-            ? $R->generateDownload()
-            : $R->generateString();
-        */
     }
 
     /**

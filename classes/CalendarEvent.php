@@ -62,20 +62,15 @@ class CalendarEvent
      */
     private function formatDate($date)
     {
-        # Stopgap
-        return strftime(
-            DATE_ATOM,
-            $date
-        );
-
+        return strftime('%Y%m%dT%H%M%S', $date);
         /*
-        if (is_string($date)) {
-            var_dump(
-                date_create_from_format(
-                    DATE_ATOM,
-                    $date
-                )
+        if (!$date instanceof DateTime) {
+            return date_create_from_format(
+                DATE_ATOM,
+                strtotime($date)
             );
+        } else {
+            return $date->format(DATE_ATOM);
         }
         */
     }
@@ -133,17 +128,18 @@ class CalendarEvent
      */
     public function generateString()
     {
-        $created = new DateTime();
-        $content = '';
-
+        # Ugly workaround for broken dates
+        $now = $this->formatDate(
+            strtotime('now')
+        );
         $content = "BEGIN:VEVENT\n"
                  . "UID:{$this->uid}\n"
-                 . "DTSTART:{$this->formatDate($this->start)}\n"
-                 . "DTEND:{$this->formatDate($this->end)}\n"
-                 . "DTSTAMP:{$this->formatDate($this->start)}\n"
-                 . "CREATED:{$this->formatDate($created)}\n"
+                 . "DTSTART;TZID=America/New_York:{$this->start}\n"
+                 . "DTEND;TZID=America/New_York:{$this->end}\n"
+                 . "DTSTAMP;TZID=America/New_York:{$now}\n"
+                 . "CREATED;TZID=America/New_York:{$now}\n"
                  . "DESCRIPTION:{$this->formatValue($this->description)}\n"
-                 . "LAST-MODIFIED:{$this->formatDate($this->start)}\n"
+                 . "LAST-MODIFIED:{$now}\n"
                  . "LOCATION:{$this->location}\n"
 
                  # Custom fields

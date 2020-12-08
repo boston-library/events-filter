@@ -125,7 +125,6 @@ class Parse
 
         # Add matches to $Matches
         foreach ($Matches as $k => $Event) {
-        #foreach ($Feed->item as $k => $Event) {
             # Define namespace
             $ns = $Event->children('bc', true);
             $EventDate = strtotime($ns->{'start_date'});
@@ -133,12 +132,6 @@ class Parse
             if (!$this->betweenDates($EventDate, $StartDate, $EndDate)) {
                 unset($Matches->$k);
             }
-
-            /*
-            if ($this->betweenDates($EventDate, $StartDate, $EndDate)) {
-                array_push($Matches, $Event);
-            }
-            */
         }
 
         return $Matches;
@@ -184,9 +177,6 @@ class Parse
      *    or all events if nothing is checked
      *  - filter_date() returns $Matches within the $Request date period
      *  - filter_options() returns $Matches if certain boolean conditions match
-     *
-     * todo: Split into 3 clear mini-functions
-     * todo: Move to the Parse class
      */
     public function filterCategories($Request, $Feed, &$Matches)
     {
@@ -235,13 +225,9 @@ class Parse
      *  - featured unchecked = all events
      *  - hide cancelled by default
      *  - if cancelled checked, include
-     *
-     * todo: Clarify get_categories() relationship
      */
     public function filterOptions($Request, $Feed, &$Matches)
     {
-        #$Matches = $this->arrayObject($Matches);
-
         # Prevent warnings
         $Request->is_virtual = (isset($Request->is_virtual)) ?: false;
         $Request->is_featured = (isset($Request->is_featured)) ?: false;

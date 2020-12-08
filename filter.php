@@ -18,25 +18,11 @@ $Request = $Parse->arrayObject($_GET);
 $Request = $Parse->extractCategories($Request);
 $Request = $Parse->extractDates($Request);
 
-/*
-echo '<pre>';
-echo "\$Request contents\n\n";
-var_dump($Request);
-echo '</pre>';
-*/
-
 # The filtered feed
 $Matches = new stdClass();
 $Matches = $Parse->filterCategories($Request, $Feed, $Matches);
 $Matches = $Parse->filterDates($Request, $Feed, $Matches);
 $Matches = $Parse->filterOptions($Request, $Feed, $Matches);
-
-/*
-echo '<pre>';
-echo "\$Matches contents\n\n";
-var_dump($Matches);
-echo '</pre>';
-*/
 
 # The output options
 $Output = new Output();
@@ -46,13 +32,6 @@ $Output = new Output();
 if (isset($_GET['download'])) {
     $Output->rss2ics($Matches, true);
 }
-
-/*
-echo '<pre>';
-echo "\$Output contents\n\n";
-var_dump($Output->rss2ics($Matches));
-echo '</pre>';
-*/
 ?>
 
 <!doctype html>
@@ -82,7 +61,7 @@ echo '</pre>';
         <a href="/" target="_blank">New Search</a>
     </p>
 
-    <?=$Output->rss2ics($Matches, $Download = false, $HTML = true)?>
+    <?= $Output->rss2ics($Matches, $Download = false, $HTML = true) ?>
 
 
 </body>
