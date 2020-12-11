@@ -1,9 +1,6 @@
 <?php
 declare(strict_types=1);
 
-# Force timezone and charset
-date_default_timezone_set('EST');
-ini_set('default_charset', 'UTF-8');
 require_once 'autoload.php';
 
 /**
@@ -62,11 +59,11 @@ if (isset($_GET['download'])) {
 ?>
 
 <!doctype html>
-<html lang='en'>
+<html>
 
 <head>
     <title>Export Events | Boston Public Library</title>
-    <meta charset='utf-8'>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
     <style>
         tr,
@@ -85,9 +82,8 @@ if (isset($_GET['download'])) {
         <a href="filter.php?download&<?=$_SERVER['QUERY_STRING']?>"
             target="_blank">Download ICS</a>
         &ensp; | &ensp;
-        <a href="/" target="_blank">New Search</a>
+        <a href="/events-filter">New Search</a>
     </p>
-
     <?= $Output->rss2ics($Matches, $Download = false, $HTML = true) ?>
 
 

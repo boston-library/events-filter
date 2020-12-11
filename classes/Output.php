@@ -131,12 +131,21 @@ class Output
                     )
                 ),
 
+                'title' => $Match->title,
+                'description' => $Match->description,
+                'location' => $Location,
+                'url' => $Match->link,
+                'contact' => $Organizer,
+                'categories' => $CatString,
+
+                /*
                 'title' => strval($Match->title),
                 'description' => strval($Match->description),
                 'location' => strval($Location),
                 'url' => strval($Match->link),
                 'contact' => strval($Organizer),
                 'categories' => strval($CatString),
+                */
             ];
             
             array_push($OutputHTML, $ParametersHTML);

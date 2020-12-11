@@ -107,7 +107,7 @@ class Metadata
         '粵語',
     ];
 
-    
+
     /**
      * Functions
      */
@@ -118,12 +118,13 @@ class Metadata
         $output = '';
         foreach ($values as $v) {
             $id_tmp = 'category_'.bin2hex(random_bytes(2));
-            $v_html = quoted_printable_encode($v);
+            #$v_uri = urlencode($v);
 
+            # value="$v_uri" />
             $output .= <<<HTML
               <input type='checkbox'
                 name='$id_tmp' id='$id_tmp'
-                value="$v_html" />
+                value="$v" />
               <label for='$id_tmp'>$v</label>
               <br />
 HTML;

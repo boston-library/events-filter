@@ -164,8 +164,21 @@ class Parse
 
         foreach ($Request as $k => $v) {
             if (preg_match($regex, $k)) {
-                $v_utf8 = quoted_printable_decode($v);
-                array_push($Request->category, $v_utf8);
+                #$v_utf8 = urldecode($v);
+                #$v_utf8 = mb_convert_encoding($v, 'HTML-ENTITIES', 'UTF-8');
+
+                /*
+                echo '<pre>';
+                echo "\nv: ".var_dump(mb_detect_encoding($v));
+                echo "\nv: ".var_dump($v);
+
+                echo "\nv_utf8: ".var_dump(mb_detect_encoding($v_utf8));
+                echo "\nv_utf8: ".var_dump($v_utf8);
+                echo '</pre>';
+                */
+
+                array_push($Request->category, $v);
+                #array_push($Request->category, $v_utf8);
                 unset($Request->$k);
             }
         }

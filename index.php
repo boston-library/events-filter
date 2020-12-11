@@ -6,11 +6,11 @@ $Metadata = new Metadata();
 ?>
 
 <!doctype html>
-<html lang='en'>
+<html>
 
 <head>
   <title>Export Events | Boston Public Library</title>
-  <meta charset='utf-8'>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
   <style>
     fieldset {
