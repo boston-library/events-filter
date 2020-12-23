@@ -40,6 +40,9 @@ $Metadata = new Metadata();
       <input type='radio' name='date_radio' id='date_radio' value='next_week' />
       <label for='next_week'>Next 7 Days</label><br />
 
+      <input type='radio' name='date_radio' id='date_radio' value='next_month' />
+      <label for='next_month'>Next Month</label><br />
+
       From
       <input type='date' name='start_date' id='start_date'
         min='<?= strftime('%Y-%m-%d', strtotime('today')) ?>'

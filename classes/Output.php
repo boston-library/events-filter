@@ -42,17 +42,6 @@ class Output
              */
             $Organizer = 'MAILTO:'.$ns->{'contact'}->{'email'};
 
-            /*
-            $Organizer = implode(
-                "\n",
-                array_filter([
-                    $ns->{'contact'}->{'name'},
-                    $ns->{'contact'}->{'phone'},
-                    $ns->{'contact'}->{'email'},
-                ])
-            );
-            */
-
             # $Location
             $Location =
             (trim(
@@ -137,15 +126,6 @@ class Output
                 'url' => $Match->link,
                 'contact' => $Organizer,
                 'categories' => $CatString,
-
-                /*
-                'title' => strval($Match->title),
-                'description' => strval($Match->description),
-                'location' => strval($Location),
-                'url' => strval($Match->link),
-                'contact' => strval($Organizer),
-                'categories' => strval($CatString),
-                */
             ];
             
             array_push($OutputHTML, $ParametersHTML);

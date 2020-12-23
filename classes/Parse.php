@@ -74,14 +74,14 @@ class Parse
         $this_saturday = date($f, strtotime('next saturday'));
         $this_sunday = date($f, strtotime('next sunday'));
         $next_week = date($f, strtotime('+7 days'));
-        $next_year = date($f, strtotime('+1 year'));
+        $next_month = date($f, strtotime('+1 month'));
 
         # Radio button options
         # Only applied absent date entry
         if (!empty($Request->start_date) || !empty($Request->end_date)) {
             # Partial manual date fallback
             $Request->start_date = ($Request->start_date) ?: $today;
-            $Request->end_date = ($Request->end_date) ?: $next_year;
+            $Request->end_date = ($Request->end_date) ?: $next_month;
         } else {
             switch ($Request->date_radio) {
             case 'today':
@@ -104,9 +104,10 @@ class Parse
                 $Request->end_date = $next_week;
                 break;
 
+            case 'next_month':
             default:
                 $Request->start_date = $today;
-                $Request->end_date = $next_year;
+                $Request->end_date = $next_month;
                 break;
             }
         }
@@ -164,21 +165,7 @@ class Parse
 
         foreach ($Request as $k => $v) {
             if (preg_match($regex, $k)) {
-                #$v_utf8 = urldecode($v);
-                #$v_utf8 = mb_convert_encoding($v, 'HTML-ENTITIES', 'UTF-8');
-
-                /*
-                echo '<pre>';
-                echo "\nv: ".var_dump(mb_detect_encoding($v));
-                echo "\nv: ".var_dump($v);
-
-                echo "\nv_utf8: ".var_dump(mb_detect_encoding($v_utf8));
-                echo "\nv_utf8: ".var_dump($v_utf8);
-                echo '</pre>';
-                */
-
                 array_push($Request->category, $v);
-                #array_push($Request->category, $v_utf8);
                 unset($Request->$k);
             }
         }
