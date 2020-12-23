@@ -56,8 +56,11 @@ $Output = new Output();
 if (isset($_GET['download'])) {
     $Output->rss2ics($Matches, true);
 }
+
+require_once 'templates/bibcom_header.php';
 ?>
 
+<!--
 <!doctype html>
 <html>
 
@@ -76,7 +79,7 @@ if (isset($_GET['download'])) {
 </head>
 
 <body>
-
+-->
 
     <p>
         <a href="filter.php?download&<?=$_SERVER['QUERY_STRING']?>"
@@ -86,7 +89,10 @@ if (isset($_GET['download'])) {
     </p>
     <?= $Output->rss2ics($Matches, $Download = false, $HTML = true) ?>
 
-
+<!--
 </body>
 
 </html>
+-->
+
+<?php require_once 'templates/bibcom_footer.php';

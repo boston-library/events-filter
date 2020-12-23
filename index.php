@@ -3,8 +3,11 @@ declare(strict_types=1);
 
 require_once 'autoload.php';
 $Metadata = new Metadata();
+
+require_once 'templates/bibcom_header.php';
 ?>
 
+<!--
 <!doctype html>
 <html>
 
@@ -20,7 +23,7 @@ $Metadata = new Metadata();
 </head>
 
 <body>
-
+-->
 
   <form action='filter.php' method='get'>
 
@@ -41,7 +44,7 @@ $Metadata = new Metadata();
       <label for='next_week'>Next 7 Days</label><br />
 
       <input type='radio' name='date_radio' id='date_radio' value='next_month' />
-      <label for='next_month'>Next Month</label><br />
+      <label for='next_month'>Next 30 Days</label><br />
 
       From
       <input type='date' name='start_date' id='start_date'
@@ -101,7 +104,10 @@ $Metadata = new Metadata();
     <input type='submit' value='Submit'>
   </form>
 
-
+<!--
 </body>
 
 </html>
+-->
+
+<?php require_once 'templates/bibcom_footer.php';
