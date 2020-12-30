@@ -57,29 +57,8 @@ if (isset($_GET['download'])) {
     $Output->rss2ics($Matches, true);
 }
 
-require_once 'templates/bibcom_header.php';
+require_once 'templates/header.php';
 ?>
-
-<!--
-<!doctype html>
-<html>
-
-<head>
-    <title>Export Events | Boston Public Library</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-
-    <style>
-        tr,
-        th,
-        td {
-            border: 1px solid black;
-            padding: 0.25em 0.5em;
-        }
-    </style>
-</head>
-
-<body>
--->
 
     <p>
         <a href="filter.php?download&<?=$_SERVER['QUERY_STRING']?>"
@@ -89,10 +68,4 @@ require_once 'templates/bibcom_header.php';
     </p>
     <?= $Output->rss2ics($Matches, $Download = false, $HTML = true) ?>
 
-<!--
-</body>
-
-</html>
--->
-
-<?php require_once 'templates/bibcom_footer.php';
+<?php require_once 'templates/footer.php';

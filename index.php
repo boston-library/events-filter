@@ -4,32 +4,14 @@ declare(strict_types=1);
 require_once 'autoload.php';
 $Metadata = new Metadata();
 
-require_once 'templates/bibcom_header.php';
+require_once 'templates/header.php';
 ?>
-
-<!--
-<!doctype html>
-<html>
-
-<head>
-  <title>Export Events | Boston Public Library</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-
-  <style>
-    fieldset {
-      margin-bottom: 1em;
-    }
-  </style>
-</head>
-
-<body>
--->
 
   <form action='filter.php' method='get'>
 
     <!-- Date -->
-    <fieldset>
-      <legend>Date</legend>
+    <fieldset style="margin-bottom: 1em;">
+      <legend style="font-weight: bold;">Date</legend>
 
       <input type='radio' name='date_radio' id='date_radio' value='today' />
       <label for='today'>Today</label><br />
@@ -58,38 +40,38 @@ require_once 'templates/bibcom_header.php';
     </fieldset>
 
     <!-- Locations -->
-    <fieldset>
-      <legend>Locations</legend>
+    <fieldset style="margin-bottom: 1em;">
+      <legend style="font-weight: bold;">Locations</legend>
       <?= $Metadata->checkboxes('Locations', $Metadata->Locations) ?>
     </fieldset>
 
     <!-- Event Types -->
-    <fieldset>
-      <legend>Event Types</legend>
+    <fieldset style="margin-bottom: 1em;">
+      <legend style="font-weight: bold;">Event Types</legend>
       <?= $Metadata->checkboxes('Event Types', $Metadata->EventTypes) ?>
     </fieldset>
 
     <!-- Programs -->
-    <fieldset>
-      <legend>Programs</legend>
+    <fieldset style="margin-bottom: 1em;">
+      <legend style="font-weight: bold;">Programs</legend>
       <?= $Metadata->checkboxes('Programs', $Metadata->Programs) ?>
     </fieldset>
 
     <!-- Audiences -->
-    <fieldset>
-      <legend>Audiences</legend>
+    <fieldset style="margin-bottom: 1em;">
+      <legend style="font-weight: bold;">Audiences</legend>
       <?= $Metadata->checkboxes('Audiences', $Metadata->Audiences) ?>
     </fieldset>
 
     <!-- Languages -->
-    <fieldset>
-      <legend>Languages</legend>
+    <fieldset style="margin-bottom: 1em;">
+      <legend style="font-weight: bold;">Languages</legend>
       <?= $Metadata->checkboxes('Languages', $Metadata->Languages) ?>
     </fieldset>
 
     <!-- Options -->
-    <fieldset>
-      <legend>Filter By</legend>
+    <fieldset style="margin-bottom: 1em;">
+      <legend style="font-weight: bold;">Filter By</legend>
 
       <input type="checkbox" id="is_virtual" name="is_virtual" value="true" checked />
       <label for="is_virtual">Only Online Events</label><br />
@@ -101,13 +83,8 @@ require_once 'templates/bibcom_header.php';
       <label for="is_cancelled">Include Cancelled Events</label><br />
     </fieldset>
 
-    <input type='submit' value='Submit'>
+    <input type="submit" value="Submit"
+    class="d-button d-button--solid-primary o-link--white" />
   </form>
 
-<!--
-</body>
-
-</html>
--->
-
-<?php require_once 'templates/bibcom_footer.php';
+<?php require_once 'templates/footer.php';
