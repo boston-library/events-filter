@@ -38,7 +38,7 @@ class Calendar
         header('Cache-Control: post-check=0, pre-check=0', false);
         header('Pragma: no-cache');
         header('Content-type: text/calendar; charset=utf-8');
-        header('Content-Disposition: inline; filename="calendar.ics"');
+        header('Content-Disposition: attachment; filename="calendar.ics"');
         header("Content-Description: File Transfer");
         header("Content-Transfer-Encoding: binary");
         header("Content-Length: " . strlen($generated));

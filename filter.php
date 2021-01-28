@@ -51,21 +51,51 @@ $Matches = $Parse->filterOptions($Request, $Feed, $Matches);
 # The output options
 $Output = new Output();
 
-# Download link option
+# ICS download option
 # Needs to run before HTML is sent
-if (isset($_GET['download'])) {
+if (isset($_GET['download_ics'])) {
     $Output->rss2ics($Matches, true);
 }
 
-require_once 'templates/header.php';
-?>
+# RSS subscribe option
+if (isset($_GET['subscribe_rss'])) {
+    $FeedPublish = new FeedPublish();
+    $FeedPublish->open();
+    $FeedPublish->channel();
 
+    foreach ($Matches as $Match) {
+        $FeedPublish->item($Match);
+    }
+
+    $FeedPublish->close();
+}
+
+
+# Plain HTML output option
+# Used to embed an unstyled table, e.g., in an iframe
+if (isset($_GET['plain_html'])) {
+    echo $Output->rss2ics($Matches, $Download = false, $HTML = true);
+} elseif (isset($_GET['download_ics']) || isset($_GET['subscribe_rss'])) {
+    die();
+} else {
+    $QueryString = $_SERVER['QUERY_STRING'];
+    require_once 'templates/header.php';
+
+    echo $HTML = <<<HTML
     <p>
-        <a href="filter.php?download&<?=$_SERVER['QUERY_STRING']?>"
-            target="_blank">Download ICS</a>
-        &ensp; | &ensp;
-        <a href="/events-filter">New Search</a>
+      <a href="filter.php?download_ics&$QueryString"
+        target="_blank">Download ICS</a>
+      &ensp; | &ensp;
+      <a href="filter.php?subscribe_rss&$QueryString"
+        target="_blank">Subscribe RSS</a>
+      &ensp; | &ensp;
+      <a href="filter.php?plain_html&$QueryString"
+        target="_blank">Embeddable HTML</a>
+      &ensp; | &ensp;
+      <a href="/events-filter">New Search</a>
     </p>
-    <?= $Output->rss2ics($Matches, $Download = false, $HTML = true) ?>
+HTML;
 
-<?php require_once 'templates/footer.php';
+    echo $Output->rss2ics($Matches, $Download = false, $HTML = true);
+    require_once 'templates/footer.php';
+}
